@@ -1,0 +1,15 @@
+                        UNZIPPED.TXT
+                               
+The FDSP toolbox files have been successfully downloaded 
+into the directory: 
+
+   c:\fdsp_net  
+
+To install the FSDP toolbox:
+
+1. Run MATLAB (Version 6.1 or later)
+
+2. Issue the following commands:
+
+   cd c:\fdsp_net
+   setup

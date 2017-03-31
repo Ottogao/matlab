@@ -1,0 +1,74 @@
+function [b,a] = f_ellipticz (F_p,F_s,delta_p,delta_s,ftype,fs,n)
+
+%F_ELLIPTICZ: Design elliptic frequency-selective digital filter
+%
+% Usage: [b,a] = f_ellipticz (F_p,F_s,delta_p,delta_s,ftype,fs,n)
+%
+% Inputs: 
+%         F_p     = passband cutoff frequency or frequencies
+%         F_s     = stopband cutoff frequency or frequencies
+%         delta_p = passband ripple
+%         delta_s = stopband attenuation
+%         ftype   = filter type
+%
+%                   0 = lowpass
+%                   1 = highpass
+%                   2 = bandpass (F_p and F_s are vectors)
+%                  3 = bandstop (F_s and F_p are vectors)
+%
+%         fs      = sampling frequency in Hz
+%         n       = an optional integer specifying the filter
+%                   order.  If n is not present, an estimate of
+%                   order required to meet the specifications
+%                   is used.
+% Outputs:  
+%           b = 1 by (n+1) coefficient vector of numerator polynomial 
+%           a = 1 by (n+1) coefficient vector of denominator polynomial
+%
+% See also: F_BUTTERZ, F_CHEBY1Z, F_CHEBY2Z
+
+% Initialize
+
+fs = f_clip (fs,0,fs);
+F_p = f_clip (F_p,0,fs/2);
+F_s = f_clip (F_s,0,fs/2);
+delta_p = f_clip (delta_p,0,delta_p);
+delta_s = f_clip (delta_s,0,delta_s);
+ftype = f_clip (ftype,0,3);
+T = 1/fs;
+
+% Compute normalized lowpass analog filter 
+
+switch (ftype)
+case 0, r = F_p/F_s;
+case 1, r = F_s/F_p;
+case 2, r = max([F_s(1)/F_p(1),F_p(2)/F_s(2)]);
+case 3, r = max([F_p(1)/F_s(1),F_s(2)/F_p(2)]);
+end
+F_0 = 1/(2*pi);
+F_1 = F_0/r;
+if nargin < 7
+   [bs,as] = f_elliptics (F_0,F_1,delta_p,delta_s);
+else
+   [bs,as] = f_elliptics (F_0,F_1,delta_p,delta_s,n);
+end
+
+% Prewarp cutoff frequencies
+
+F_p = tan(pi*F_p*T) / (pi*T);
+F_s = tan(pi*F_s*T) / (pi*T);
+
+% Convert to desired filter type
+
+switch (ftype)
+   
+case 0, [B,A] = f_low2lows  (bs,as,F_p);
+case 1, [B,A] = f_low2highs (bs,as,F_p);
+case 2, [B,A] = f_low2bps   (bs,as,F_p(1),F_p(2));
+case 3, [B,A] = f_low2bss   (bs,as,F_p(1),F_p(2));
+   
+end
+
+% Convert to digital filter
+
+[b,a] = f_bilin  (B,A,fs);

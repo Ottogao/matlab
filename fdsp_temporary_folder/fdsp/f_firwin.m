@@ -1,0 +1,134 @@
+function b = f_firwin (fun,m,fs,win,sym,p)
+
+%F_FIRWIN: Design a general windowed FIR filter
+%
+% Usage: b = f_firwin (fun,m,fs,win,sym,p)
+%
+% Inputs: 
+%         fun = string containing name of function which 
+%               specifies the desired amplitude response 
+%               of the filter. Usage:
+%
+%               A = fun(f,fs,p)
+%
+%               Here f is the frequency, fs is the sampling 
+%               frequency, and p is an option parameter 
+%               vector containing things like cutoff 
+%               frequencies,etc. The output A is a the 
+%               desired amplitude response.
+%
+%         m   = the filter order
+%         fs  = sampling frequency
+%         win = the window type to be used:
+%
+%               0 = rectangular
+%               1 = Hanning
+%               2 = Hamming
+%               3 = Blackman
+% 
+%         sym = symmetry of pulse response.  
+%
+%               0 = even symmetry of h(k) about k = m/2
+%               1 = odd symmetry of h(k) about k = m/2
+%
+%         p   = an optional vector of length contained 
+%               design paramaters to be passed to fun.  
+%               For example p might contain cutoff 
+%               frequencies or gains.
+% Outputs: 
+%          b = 1 by m+1 vector of filter coeficients. The 
+%              filter output is
+%
+%              y(k) = b[1]*x[k] + b[2]*x[k-1] + ... 
+%                     + b[m+1]*x[k-m]  
+% Notes:    
+%        1. To design a frequency-selective filter, you 
+%           can use f_firamp for the calling argument fun, 
+%           or you can use f_firideal in place of f_firwin.
+%
+%        2. The linear-phase filter type is determined by
+%           combination of sym and n:
+%   
+%           sym    m      type
+%            0    even     1
+%            0    odd      2
+%            1    even     3
+%            1    odd      4
+%
+% See also: F_FIRAMP, F_FIRIDEAL, F_FIRSAMP, F_FIRLS, 
+%           F_FIRPARKS, F_FREQZ    
+
+% Initialize
+
+m = f_clip(m,0,m);
+m2 = floor(m/2);
+win = f_clip(win,0,3);
+b = zeros (1,m+1);
+M = 100;
+fn = fs/2;
+T = 1/fs;
+df = fn/M;
+pp = nargin - 5;
+
+% Compute filter coefficients using Simpson's rule
+% NOTE: Maybe call quadL with local function instead?
+
+wstr = sprintf ('Computing %d FIR filter coefficients...',m+1);   
+w = waitbar (0,wstr);   
+for k = 0 : m
+   waitbar (k/m,w);
+   if sym == 0
+      if pp
+         b(k+1) = feval(fun,0,fs,p) + cos(2*pi*(k-0.5*m)*fn*T)*feval(fun,fn,fs,p);
+      else
+         b(k+1) = feval(fun,0,fs) + cos(2*pi*(k-0.5*m)*fn*T)*feval(fun,fn,fs);
+      end         
+      for i = 1 : M-1
+         f = i*df;
+         if pp
+            if mod(i,2)
+               b(k+1) = b(k+1) + 4*cos(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs,p);
+            else
+               b(k+1) = b(k+1) + 2*cos(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs,p); 
+            end
+         else
+            if mod(i,2)
+               b(k+1) = b(k+1) + 4*cos(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs);
+            else
+               b(k+1) = b(k+1) + 2*cos(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs); 
+            end
+         end
+      end  
+      b(k+1) = 2*T*df*b(k+1)/3;
+   else
+      if pp
+         b(k+1) = feval(fun,0,fs,p) - sin(2*pi*(k-0.5*m)*fn*T)*feval(fun,fn,fs,p);
+      else
+         b(k+1) = feval(fun,0,fs) - sin(2*pi*(k-0.5*m)*fn*T)*feval(fun,fn,fs);
+      end
+      for i = 1 : M-1
+         f = i*df;
+         if pp
+            if mod(i,2)
+               b(k+1) = b(k+1) - 4*sin(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs,p);
+            else
+               b(k+1) = b(k+1) - 2*sin(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs,p); 
+            end
+         else
+            if mod(i,2)
+               b(k+1) = b(k+1) - 4*sin(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs);
+            else
+               b(k+1) = b(k+1) - 2*sin(2*pi*(k-0.5*m)*f*T)*feval(fun,f,fs); 
+            end
+         end
+      end  
+      b(k+1) = 2*T*df*b(k+1)/3;
+   end
+end
+close (w);
+
+% Add window
+
+w = f_window (win,m);
+b = b .* w;
+b = real(b);

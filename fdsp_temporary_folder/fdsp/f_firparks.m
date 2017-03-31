@@ -1,0 +1,84 @@
+function [b,n] = f_firparks (m,F_p,F_s,delta_p,delta_s,ftype,fs)
+
+% F_FIRPARKS: Design a Parks-McClellan equiripple FIR filter
+%
+% Usage: b = f_firparks (m,F_p,F_s,delta_p,delta_s,ftype,fs)
+%
+% Inputs: 
+%         m       = filter order (m >= 2)
+%         F_p     = passband cutoff frequency or frequencies
+%         F_s     = stopband cutoff frequency or frequencies
+%         delta_p = passband ripple
+%         delta_s = stopband attenuation
+%         ftype   = filter type
+%
+%                   0 = lowpass
+%                   1 = highpass
+%                   2 = bandpass (F_p and F_s are vectors)
+%                   3 = bandstop (F_p and F_s are vectors)
+%
+%         fs      = sampling frequency in Hz
+% Outputs: 
+%          b = 1 by (m+1) coefficient vector of numerator 
+%              polynomial 
+%          n = optional estimate of filter order needed to 
+%              meet specs.
+%
+% Note: This function uses an equiripple FIR filter 
+%       implementation based  on a free C version developed 
+%       by Jake Janovetz (janovetz@uiuc.edu).
+%
+% See also: F_FIRWIN, F_FIRIDEAL, F_FIRSAMP, F_FIRLS, 
+%           F_FREQZ
+
+% Initialize
+
+m = f_clip (m,2,m);
+if mod(m,2)
+    m = m + 1;
+end
+p = m/2;
+fs = f_clip (fs,0,fs);
+F_p = f_clip (F_p,0,fs/2);
+F_s = f_clip (F_s,0,fs/2);
+delta_p = f_clip (delta_p,0,delta_p);
+delta_s = f_clip (delta_s,0,delta_s);
+T = 1/fs;
+w = delta_s/delta_p;
+
+% Compute estimate of required filter order
+
+B = abs(F_p(1)-F_s(1))/fs;
+n = ceil(-(10*log10(delta_p*delta_s)+13)/(14.6*B) + 1);
+
+% Compute F, A, and W like in f_parks.dll
+
+switch ftype
+    case 0,                                               % low pass
+        F_0 = [0 F_p F_s fs/2]/fs;
+        A_0 = [1 0];
+        W_0 = [w 1];
+        numband = 2;
+    case 1,                                               % high pass
+        F_0 = [0 F_s F_p fs/2]/fs;
+        A_0 = [0 1];
+        W_0 = [1 w];
+        numband = 2;
+    case 2,                                               % bandpass
+        F_0 = [0 F_s(1) F_p(1) F_p(2) F_s(2) fs/2]/fs;
+        A_0 = [0 1 0];
+        W_0 = [1 w 1];
+        numband = 3;
+    case 3,                                               % bandstop
+        F_0 = [0 F_p(1) F_s(1) F_s(2) F_p(2) fs/2]/fs;
+        A_0 = [1 0 1];
+        W_0 = [w 1 w];
+        numband = 3;
+end
+
+% Compute equiripple filter (uses local dll file)
+
+type = 1;
+b = f_parks (m+1,numband,F_0,A_0,W_0,type);
+  
+  

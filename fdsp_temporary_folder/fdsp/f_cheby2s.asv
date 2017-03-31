@@ -1,0 +1,86 @@
+function [b,a] = f_cheby2s (F_p,F_s,delta_p,delta_s,n)
+
+%F_CHEBY2S: Design a Chebyshev-II lowpass analog filter
+%
+%                     b(1)s^n + b(2)s^(n-1) + ... + b(n+1)
+%              H(s) = ------------------------------------
+%                     a(1)s^n + a(2)s^(n-1) + ... + a(n+1)
+%
+% Usage: [b,a] = f_cheby2s (F_p,F_s,delta_p,delta_s,n)
+%
+% Description: Design an nth order analog Chebyshev II lowpass 
+%              filter with stopband frequency F_s and stopband
+%              ripple delta_s.
+%
+% Inputs: F_p     = passband cutoff frequency in Hz
+%         F_s     = stopband cutoff frequency in Hz (F_s > F_p)
+%         delta_p = passband ripple
+%         delta_s = stopband attenuation
+%         n       = an optional integer specifying the filter
+%                   order.  If n is not present, the smallest
+%                   order which meets the specifications is
+%                   used (n >= 2).
+%
+% Outputs: b = 1 by (n+1) coefficient vector of numerator
+%              polynomial.
+%          a = 1 by (n+1) coefficient vector of denominator 
+%              polynomial 
+%
+% See also: F_BUTTERS, F_CHEBY2S, F_ELLIPTICS
+
+% Initialize
+
+F_p = f_clip (F_p,0,F_p);
+F_s = f_clip (F_s,F_p,F_s);
+delta_p = f_clip (delta_p,0,delta_p);
+delta_s = f_clip (delta_s,0,delta_s);
+
+% Find filter order
+
+r = F_p / F_s;
+d = sqrt(((1 - delta_p)^(-2) - 1)/(delta_s^(-2) - 1));
+if nargin < 5
+   n = ceil(acosh(d^(-1))/acosh(r^(-1)));
+end
+
+% Find poles
+
+epsilon = (delta_s^(-2)-1)^(-1/2);
+k = 0 : n-1;
+theta = pi*(2*k+1+n)/(2*n);
+F_0 = F_s;
+alpha = epsilon^(-1)+ sqrt(epsilon^(-2)+1);
+r_1 = pi*F_0*(alpha^(1/n) - alpha^(-1/n));
+r_2 = pi*F_0*(alpha^(1/n) + alpha^(-1/n));
+sigma = r_1*cos(theta);
+omega = r_2*sin(theta);              
+
+%sigma = 2*pi*F_0*sinh((1/n)*asinh(1/epsilon))*cos(theta);
+%omega = 2*pi*F_0*cosh((1/n)*asinh(1/epsilon))*sin(theta);
+
+p = sigma + j*omega;
+v = (2*pi*F_s)^2 ./ p;
+
+% Find zeros
+
+z0 = f_tocol(j*2*pi*F_s ./ sin(theta));
+if mod(n,2) == 0
+   z = z0;
+else
+   n0 = (n+1)/2;
+   z = [z0(1:n0-1) ; z0(n0+1:n)]; 
+end
+size(z)
+
+% Compute coefficients
+
+a = real(poly(v));
+b = real(poly(z));
+gamma = prod(v)/prod(z);
+if mod(n,2) ~= 0
+   gamma = -gamma;
+end
+b = gamma*b;
+
+%-------------------------------------------------------------------
+  

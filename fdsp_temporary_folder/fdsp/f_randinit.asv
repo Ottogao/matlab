@@ -1,0 +1,22 @@
+function f_randinit (s)
+
+%F_RANDINIT: Initialize random number generator using seed 
+%-----------------------------------------------------------------------
+% Usage:       f_randinit (s)
+%
+% Description: Initialize the random number generator with a seed
+%
+% Inputs:      s = an integer seed which selects a random
+%                  sequence.  If seed <= 0, a random seed
+%                  based on the time of day is selected.
+%
+% See also:    f_randu, f_randg
+%-----------------------------------------------------------------------
+   if s > 0
+      rand ('state',s)
+   else
+      rand ('state',sum(100*clock))
+   end
+%-----------------------------------------------------------------------
+
+

@@ -1,0 +1,143 @@
+function [b,a,n,fs,x,y,user] = f_getiir (xm,xm_old,fs,F_0,F_1,B,delta_p,delta_s,proto,b,a,x,y,user,n);
+
+%F_GETIIR: Compute IIR filter coefficients for GUI module G_IIR
+%
+% Usage: [b,a,n,fs,x,y,user] = f_getiir (xm,fs,F_0,F_1,B,delta_p,delta_s,...
+%                                        proto,b,a,x,y,user,n;
+%
+% Inputs: 
+%         xm = filter type
+%
+%                  1 = resonator
+%                  2 = notch 
+%                  3 = lowpass  
+%                  4 = highpass
+%                  5 = bandpass
+%                  6 = bandstop
+%                  7 = user defined
+%
+%         fs      = sampling frequency 
+%         F_0     = low frequency cutoff (0 to fs/2)
+%         F_1     = high frequency cutoff (F_0 to fs/2)
+%         B       = transition bandwidth
+%         delta_p = passband ripple (linear)
+%         delta_s = stopband ripple (linear)
+%         proto   = analog prototype filter to use
+%
+%                   1 = Butterworth
+%                   2 = Chebyshev I
+%                   3 = Chebyshev II
+%                   4 = elliptic
+%
+%         b       = 1 by (n+1) vector of numerator coefficients
+%         a       = 1 by (n+1) vector of denominator coefficients
+%         x      = M by 1 array of filter inputs
+%         y      = M by 1 array of filter outputs
+%         user    = string containing name of MAT-file with user-defined
+%                   filter paramters a, b, fs
+% Outputs: 
+%          b    = 1 by (n+1) vector of numerator coefficients
+%          a    = 1 by (n+1) vector of denominator coefficients
+%          n    = filter order
+%          fs   = sampling frequency 
+%          x    = M by 1 array of filter inputs
+%          y    = M by 1 array of filter outputs
+%          user = string containing name of MAT-file with user-defined
+%                 filter paramters a, b, fs
+%
+% Notes: 
+%        1. For a lowpass filter, set F_0 = Fc
+%        2. For a highpass filter, set F_1 = Fc
+
+% Initialize
+
+   fn = fs/2;
+   f0 = (F_0 + F_1)/2;
+   A_p = -20*log10(1-delta_p);
+   A_s = -20*log10(delta_s);
+   f_type = xm - 1;
+   type = f_type - 2;
+   
+   switch type
+      
+   case 0, 
+      F_p = F_0;
+      F_s = F_p + B;
+   case 1,
+      F_p = F_1;
+      F_s = F_1 - B;
+   case 2,
+      F_p = [F_0, F_1];
+      F_s = [F_0-B, F_1+B];
+   case 3,
+      F_p = [F_0-B, F_1+B];
+      F_s = [F_0, F_1];
+      
+   end
+ 
+ % Order of bandpass and bandstop will double  
+ 
+ if (type >= 2) & (type <= 3)
+     n1 = floor(n/2);
+ else
+     n1 = n;
+ end
+    
+% Construct fitler
+
+switch (f_type)
+   
+case 0,                                          % resonator   
+   
+   theta_0 = 2*pi*f0/fs;
+   r = 1 - 0.2*B/fs;
+   z0 = exp(j*theta_0);
+   b_0 = abs(z0^2-2*r*cos(theta_0)*z0 + r^2)/abs(z0^2-1);
+   b = b_0*[1 0 -1];
+   a = [1 -2*r*cos(theta_0) r^2];
+   n = 2;
+   
+case 1,                                          % notch filter
+   
+   theta_0 = 2*pi*f0/fs;
+   r = 1 - 0.2*B/fs;
+   b_0 = abs(1 - 2*r*cos(theta_0) + r^2)/(2*abs(1 - cos(theta_0)));
+   b = b_0*[1 -2*cos(theta_0) 1];
+   a = [1 -2*r*cos(theta_0) r^2];
+   n = 2;
+   
+case {2,3,4,5},                                   % frequency selective
+   
+   switch (proto)
+      
+   case 1, [b,a] = f_butterz   (F_p,F_s,delta_p,delta_s,type,fs,n1);
+   case 2, [b,a] = f_cheby1z   (F_p,F_s,delta_p,delta_s,type,fs,n1);
+   case 3, [b,a] = f_cheby2z   (F_p,F_s,delta_p,delta_s,type,fs,n1);
+   case 4, [b,a] = f_ellipticz (F_p,F_s,delta_p,delta_s,type,fs,n1);
+
+   end
+   
+
+case 6,                                          % user defined
+   
+   caption = 'Select MAT file containing a,b,fs';
+   [user1,path] = f_getmatfile (caption,user);
+   if user1 ~= 0
+       user = user1;
+       old_path = pwd;
+       cd (path);
+       load (user,'a','b','fs')
+       cd (old_path)
+   else   
+       set (hc_type(xm),'Value',0);
+       set (hc_type(xm_old),'Value',1);
+       xm = xm_old;
+   end
+   
+end
+   
+% Finalize
+      
+xm_old = xm;
+n = length(a)-1;
+y = filter(b,a,x);

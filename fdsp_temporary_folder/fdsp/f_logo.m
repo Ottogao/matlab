@@ -1,0 +1,83 @@
+function f_logo (caption,instructor)
+
+% F_LOGO: Draw FDSP logo of a comb filter transfer function
+%
+% Usage: f_logo (caption,instructor)
+%
+% Inputs:
+%         caption    = title to display under logo 
+%         instructor = optional integer.  When present and
+%                      nonzero, this is an instructor's version
+
+% Initialize
+
+if nargin < 1
+    caption = '';
+end
+if nargin < 2
+    instructor = 0;
+end
+
+% Compute A = |H(z)|
+
+dB = 0;
+hmin = -80;
+r = 0.9;
+N = 4;
+p = 81;
+a = 2.0;
+hmax = 2;
+A = zeros(p,p);
+zr = linspace(-a,a,p);
+zi = zr;
+h = waitbar (0,'Computing transfer function surface');
+for i = 1 : p
+   waitbar ((i-1)/(p-1),h);
+   for k = 1 : p
+      z = zr(i) + j*zi(k);
+      A(i,k) = min(abs(z^N/(z^N-r^N)),hmax);
+      if dB
+          A(i,k) = max(20*log10(A(i,k)),hmin);
+      end
+   end
+end
+close (h)
+
+% Plot it
+
+mver = f_version('MATLAB');
+if mver <= 6.1
+    warning off
+end
+hs = surfc (zi,zr,A);
+if mver < 7.0
+   pause(0.01)                    % somehow needed to get clean plot?
+   hs = surfc (zi,zr,A);
+end
+
+if mver <= 6.1
+    warning on
+end 
+axis off
+
+% Add captions
+
+if ~instructor
+    h_cap = text (0,0,-.8,caption);
+    set (h_cap,'HorizontalAlignment','center',...
+              'FontSize',28,...
+              'FontAngle','oblique',...
+              'Color','b');
+else
+    h_cap = text (0,0,-0.7,caption);
+    set (h_cap,'HorizontalAlignment','center',...
+              'FontSize',28,...
+              'FontAngle','oblique',...
+              'Color','b');
+    h_inst = text (0,0,-0.95,'(Instructor''s Version)');
+    set (h_inst,'HorizontalAlignment','center',...
+              'FontSize',24,...
+              'Color','g');
+    
+end
+          

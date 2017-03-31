@@ -1,0 +1,115 @@
+function hv = f_plothome (han,course,homework,due,sec,problems,prob,show_sec)
+
+%F_PLOTHOME: Draw the homework assignment in display window
+%
+% Usage: f_plothome (han,course,homework,due,sec,problems,prob,show_sec)
+%
+% Inputs: 
+%          han         = array of axes handles
+%          course      = string containing course name
+%          homework    = string containing homework number
+%          due         = string containing due date
+%          sec         = 1 by 2 cell array of strings containing section numbers
+%          problems    = n by 4 cell array of problems
+%          prob        = array of length np containing subscripts
+%                        of selected problems
+%          show_sec    = show the section number for each homework
+%                        problem if nonzero.
+% Outputs:
+%          hv          = handle to text object
+
+% Initialize
+
+colors = get(gca,'ColorOrder');
+axes (han(3))
+prob_type = {'Analysis','GUI Simulation','Computation'};
+cla
+
+% Title and checkbox
+
+hv = text (0.5,1.02,'View homework assignment','HorizontalAlignment','center','Color',colors(3,:));
+
+
+
+
+% List course information
+
+dx = 0.12;
+dy = 0.04;
+htitle = text (0.5,1-2*dy,course,...
+               'HorizontalAlign','center',...
+               'Color','r',...
+               'Fontsize',18);
+text (dx,1-4*dy,['Homework: ' homework],'Color','r');
+text (dx,1-5*dy,['Due Date: ' due],'Color','r');
+if show_sec  
+   text (dx,1-6*dy,['Sections: ' sec{1} ' to ' sec{2}],'Color','r');
+end
+ 
+% List problems
+
+np = length (prob);
+dy1 = 0.8/(np+4);
+for i = 1 : np
+    k = prob(i);
+    secstr = problems{k,1};
+    pnum = problems{k,2};
+    ptype = problems{k,3};
+    s = sprintf ('%d.  Do %s problem %s ',i,prob_type{ptype},pnum);
+    if show_sec
+        s = [s sprintf(' (Section %s)',secstr)];
+    end
+    text (dx,1-6*dy-(i+1)*dy1,s)
+end
+
+
+function hc_check = f_checkbox (cstr,c,pos,nbox,row,col,label,fcolor,bcolor,cback,tipstr);
+
+%F_CHECKBOX: Create a check box control
+%
+% Usage: hc_check = f_checkbox (cstr,c,pos,nbox,row,col,label,fcolor,bcolor,cback,tipstr);
+%
+% Inputs: 
+%           cstr   = string specifying chack box variable name
+%           c      = value of check box variable (0 = unchecked, 1 = checked) 
+%           pos    = position vector of axes
+%           nbox   = number of items per column
+%           row    = row number (1 to nbox)
+%           col    = column number (1 to 2)
+%           dx     = x axis offset
+%           dy     = y axis offset
+%           label  = string containing check box label
+%           fcolor = foreground color
+%           bcolor = background color
+%           cback  = callback string 
+%           tipstr = tooltip string
+
+% Note: This will not return a handle and ONLY works with hc_c which is 
+%       previously defined in g_system??? 
+
+% Initialize
+
+waxis = pos(3);
+haxis = pos(4);
+wbox = 0.42*waxis;
+dw = (waxis - 2*wbox)/3;
+hbox = 0.13*haxis;
+dh = (haxis - nbox*hbox)/(nbox+1);
+pos0 = [pos(1)+dw+(col-1)*(wbox+dw), pos(2)+haxis-row*(dh+hbox), wbox, hbox];
+dz = hbox+dh;
+pos0 = [pos(1)+dw+(col-1)*(wbox+dw), pos(2)+haxis-row*(dh+hbox), wbox, hbox];
+
+% Create check box
+
+hc_check = uicontrol(gcf,...
+   'Style','checkbox',...
+   'Units','normalized',...
+   'Position',pos0,...
+   'Value',c, ...
+   'String',label,...
+   'ForeGroundColor',fcolor,...
+   'BackGroundColor',bcolor,...
+   'Visible','on',...
+   'Tooltip',tipstr);
+cback1 = ['set(hc_check,''Value'',1-get(hc_check,''Value'')); ' cstr ' = get(hc_check,''Value''); ' cback];
+set (hc_check,'Callback',cback1)

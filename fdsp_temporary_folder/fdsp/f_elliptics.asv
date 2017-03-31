@@ -1,0 +1,132 @@
+function [b,a] = f_elliptics (F_p,F_s,delta_p,delta_s,n)
+
+%F_ELLIPTICS: Design elliptic lowpass analog filter
+%
+% Usage: [b,a] = f_elliptics (F_p,F_s,delta_p,delta_s,n)
+%
+%                     b(1)s^n + b(2)s^(n-1) + ... + b(n+1)
+%              H(s) = ------------------------------------
+%                     a(1)s^n + a(2)s^(n-1) + ... + a(n+1)
+%
+% Inputs: F_p     = passband cutoff frequency in Hz
+%         F_s     = stopband cutoff frequency in Hz (F_s > F_p)
+%         delta_p = passband ripple
+%         delta_s = stopband attenuation
+%         n       = an optional integer specifying the filter
+%                   order.  If n is not present, the smallest
+%                   order which meets the specifications is
+%                   used.
+%
+% Outputs: b = 1 by (n+1) coefficient vector of numerator
+%              polynomial.
+%          a = 1 by (n+1) coefficient vector of denominator 
+%              polynomial 
+%
+% See also: F_BUTTERS, F_CHEBY1S, F_CHEBY2S
+
+% Initialize
+
+F_p = f_clip (F_p,0,F_p);
+F_s = f_clip (F_s,F_p,F_s);
+delta_p = f_clip (delta_p,0,delta_p);
+delta_s = f_clip (delta_s,0,delta_s);
+
+% Find the order n
+
+r = F_p / F_s;
+d = sqrt(((1-delta_p)^(-2)-1)/(delta_s^(-2)-1));
+epsilon = sqrt((1-delta_p)^(-2)-1);
+if nargin < 5
+   n = ellipke(r^2)*ellipke(1-d^2)/(ellipke(1-r^2)*ellipke(d^2));
+   n = ceil(n);
+end
+
+% Check for small n
+
+if n == 1
+   [b,a] = f_cheby1s (1,F_p,delta_p,delta_p,n);
+   return
+end
+
+% Seach for a discrimination factor r in [0,1] which yields the integer n exactly
+
+q = n*ellipke(d^2)/ellipke(1-d^2);
+options = optimset ('display','none');
+%fun0 = @f_ellip0;
+m = fminbnd (@f_ellip0,eps,1,options,q)       
+newr = sqrt(m);                                 
+newFs = F_p/newr;                            % new stopband (a bit tighter)
+
+% Find zeros
+
+if ~mod(n,2)
+   i = [1 : 2 : n-1];
+else
+   i = [0 : 2 : n-1];
+end
+[s0,c0,d0] = ellipj (i*ellipke(m)/n,m*ones(size(i)));
+i0 = find(abs(s0) > eps);
+u = (newr*s0(i0)).^(-1);
+z = [j*u(:);-j*u(:)];
+
+% Find poles
+
+%fun1 = @f_ellip1;
+v = fminsearch(@f_ellip1,ellipke(1-m),options,epsilon,1-d^2)
+v1 = v*ellipke(m)/(n*ellipke(d^2))
+[s1,c1,d1] = ellipj(v1,1-m);
+p = -(c0.*d0*s1*c1 + j*s0*d1) ./ (1 - (d0*s1).^2);
+p = f_tocol(p);
+if mod(n,2)                    % one real pole
+%   i0 = find(abs(imag(p)) < eps*norm(p));
+   [pmin,i0] = min(abs(imag(p)));
+   i1 = [1:i0-1,i0+1:length(p)];
+   p = [p ; conj(p(i1))];
+else
+   p = [p ; conj(p)];
+end
+   
+% Find gain factor
+
+b_0 = real(prod(-p)/prod(-z));
+if ~mod(n,2)
+   b_0 = b_0/sqrt(1 + epsilon^2);
+end
+
+% Find coefficients
+
+bs = b_0*poly(z);
+as = poly(p);
+[b,a] = f_low2lows (bs,as,F_p);
+
+  
+function y = f_ellip0 (m,q)
+
+%F_ELLIP0: Utility function used by f_elliptics
+%
+% Usage:       y = f_ellip0 (m,q)
+%
+% Description: This function is used in f_elliptics to find a 
+%              parameter m such that ellipke(m)/ellipke(1-m) = q.
+
+m = f_clip (m,0,1);
+if m < eps
+   y = abs(q);
+elseif m > 1-eps
+   y = 1/eps;
+else
+   y = abs(ellipke(m)/ellipke(1-m) - q);
+end
+  
+function y = f_ellip1 (x,epsilon,p)
+
+%F_ELLIP1: Utility function used by f_elliptics
+%
+% Usage:       y = f_ellip1 (x,epsilon,p)
+%
+% Description: This function is used in f_elliptics to find a 
+%              parameter x such that sn(x)/cn(x) = 1/epsilon where
+%              p is used in ellipj to compute sn and cn
+
+[sn,cn] = ellipj (x,p);
+y = abs(sn/cn - 1/epsilon);

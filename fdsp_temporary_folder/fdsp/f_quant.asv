@@ -1,0 +1,24 @@
+function y = f_quant (x,q,c,type)
+%-------------------------------------------------------------------
+% Usage:       y = f_quant (x,q,c,type)
+%
+% Description: Return x quantized to N bits.
+%
+% Entry:       x    = real value to be quantized (-c to c)
+%              q    = quantization level
+%              c    = range of x 
+%              type = quantization type:
+%
+%                     0 = rounding
+%                     1 = truncation
+%
+% Exit:        y = quantized version of x
+%-------------------------------------------------------------------
+if type == 0
+   y = q*floor((x+q/2)/q);     % rounding
+else  
+   y = q*floor(x/q);           % truncation
+end
+%y = f_clip (y,-c,c-q);
+y = f_clip (y,-2*c,c-q);
+%-------------------------------------------------------------------

@@ -1,0 +1,27 @@
+function f_calmenu (h,plotstr)
+
+%F_CALMENU: Set up caliper menu item
+%
+% Usage: f_calmenu (h,plotstr)
+%
+% Inputs: h       = handle of figure window
+%         plotstr = callback string to regenerate plot 
+         
+hm_3 = uimenu (hf_1,'Label','Help');
+cback = ['h_fig = gcf; set(h_fig,''Visible'',''off''); helpwin f_tipsrec; set(h_fig,''Visible'',''on'')'];
+hm_33 = uimenu (hm_3,'Label','User Tips','Callback',cback);
+cback = ['h_fig = gcf; set(h_fig,''Visible'',''off''); helpwin f_aboutrec; set(h_fig,''Visible'',''on'')'];
+hm_33 = uimenu (hm_3,'Label','About g_reconstruct','Callback',cback,'Separator','on');
+
+
+
+hm_2 = uimenu (h,'Label','Caliper');
+cback1 = ['[x0,y0] = ginput(1); hold on; plot(x0,y0,''k+''); hold off;'...
+          's = sprintf(''  (x,y) = (%.2f,%.2f)'',x0,y0);'...
+          'text(x0,y0,s);'];
+hm21 = uimenu (hm_2,'Label','Use mouse to select a measurement point...',...
+               'Callback',cback1);
+hm22 = uimenu (hm_2,'Label','Erase coordinates','Callback',plotstr);
+
+
+ 

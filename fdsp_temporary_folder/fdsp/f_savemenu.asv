@@ -1,0 +1,23 @@
+function hm_save = f_savemenu (userinput,savestr,label)
+
+%F_SAVEMENU: Create save menu item
+%
+% Usage: f_savemenu (userinput,savestr,label)
+%
+% Inputs: 
+%         userinput = string containing name of default file
+%         savestr   = string of varible names to be saved 
+%         label     = menu label 
+         
+if length(label) > 0
+   hm_4 = uimenu (gcf,'Label','Save data');
+else
+   hm_4= gcf;
+   label = 'Save homework';
+end
+cback_save = ['[ufname,upath] = uiputfile([userinput ''.MAT''],''Select file'');'...
+              'if ufname == 0, return, end; '...
+              'userinput = [upath ufname]; '...
+              'savestr = get(hm_save,''UserData''); '...
+              'save(userinput,' savestr ')'];
+hm_save = uimenu (hm_4,'Label',label,'Callback',cback_save,'UserData',savestr);

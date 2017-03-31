@@ -1,0 +1,56 @@
+function [hfig,han,pos,colors,ht] = f_guihome
+
+%F_GUIHOME: Create figure window for the homework builder module
+%
+% Usage:   [hfig,han,pos,colors] = f_guihome
+%
+% Outputs:
+%          hfig   = hand to figure window
+%          han    = array of handles to tiled axes
+%          pos    = array of position vectors for tiled axes
+%          colors = array of plot colors
+%          ht     - array of handles to text objects
+
+hfig = figure('NumberTitle','off',...
+              'Name','FDSP Homework Builder',...
+              'Visible','off',...
+              'MenuBar',menubar,
+          'Units','normalized','Position',[0 0 0.9 0.9],'Visible','on')
+AlterWindow ('FDSP Homework Builder','maximize')
+
+% Compute dimensions of tiled axes 
+
+screen = get(0,'Screensize');
+dx = 0.03;
+dy = 0.02*screen(3)/screen(4);
+x1 = 0.4 - 1.5*dx;
+x2 = x1;
+x3 = 0.6 - 1.5*dx;
+y1 = 0.42;
+y2 = 0.42;
+y3 = 0.9;
+pos = [dx,dy+y2+(y3-y1-y2),x1,y1
+       dx,dy,x2,y2
+       0.4+dx/2,dy,x3,y3];
+n = size(pos,1);   
+white = [1 1 1];
+
+% Create tiled axes
+
+for i = 1 : n
+    han(i) = axes('Position',pos(i,:));
+    axis ([0 1 0 1])
+    if (i <= 2) 
+        colors = get(gca,'ColorOrder');
+    end        
+    set (han(i),'Xtick',[])
+    set (han(i),'Ytick',[])
+    set (han(i),'Color',white)
+    switch (i)
+        case 1, ht(1) = text (0.5,1.04,'Create homework assignment','HorizontalAlignment','center','Color',colors(1,:));
+        case 2, ht(2) = text (0.5,1.04,'Select homework problems','HorizontalAlignment','center','Color',colors(2,:));
+    end
+    box on
+end
+
+

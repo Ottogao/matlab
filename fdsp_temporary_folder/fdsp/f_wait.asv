@@ -1,0 +1,13 @@
+function  f_wait (h)
+% F_WAIT: Pause for a key to be pressed, then close window h
+%
+% Usage:    f_wait (h)
+%
+% Entry:    h = optional numerical argument specifying handle
+%               of graphical object to close
+
+pause  
+if nargin > 0
+    close (h)
+end
+

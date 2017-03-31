@@ -1,0 +1,63 @@
+function [pos,colors,h] = f_drawfilt
+
+%F_DRAWFILT: Draw a block diagram for GUI module g_filters
+%
+% Usage:   [pos,colors,h] = f_drawfilt;
+%
+% Outputs: pos    = position of axes for block diagram
+%          h      = axis handle
+%          colors = array of plotting colors 
+ 
+% Draw block diagram
+
+h = subplot(2,1,1);
+cla
+colors = get(gca,'ColorOrder');
+pos = get(gca,'Position');
+hold on
+t1 = text (12,50,'x(k)');
+set(t1,'Color',colors(1,:))
+f_circle (20,50,2,colors(1,:));
+f_vector (21,50,1,0,9,colors(1,:))
+f_block (30,40,20,20,colors(2,:))
+text (40,50,'H(z)','HorizontalAlignment','center','Color',colors(2,:))
+f_line (50,50,1,0,9,colors(1,:))
+f_circle (60,50,2,colors(1,:));
+t2 = text (62,50,'y(k)');
+set(t2,'Color',colors(1,:))
+axis([0 170 0 60])
+axis off
+ 
+
+function f_drawfilt (h,colors)
+
+%F_DRAWFILT: Draw a block diagram for GUI module g_filt3ersspectra
+%
+% Usage: f_drawspec (h,colors);
+%
+% Input: 
+%        h      = axes handle
+%        colors = array of plotting colors
+ 
+% Initialize
+
+ylim = get(h,'Ylim');
+xlim = get(h,'Xlim');
+y0 = (ylim(2)-ylim(1))/2;
+axes (h);
+hold on
+arrow = 0.1;
+boxwidth = 0.2;
+boxheight = 0.2;
+circle = 0.02;
+
+% Draw block diagram
+
+f_circle (0.5-arrow-0.5*boxwidth,y0,circle,colors(1,:));
+text (0.5-arrow-0.5*boxwidth-0.04,y0,'x(k)','Color',colors(1,:),'HorizontalAlignment','center');
+f_vector (0.5-arrow-0.5*boxwidth+0.5*circle,y0,1,0,arrow-0.5*circle,colors(1,:))
+f_block (0.5-0.5*boxwidth,y0-0.5*boxheight,boxwidth,boxheight,colors(2,:))
+text (0.5,y0,'DFT','HorizontalAlignment','center')
+f_line (0.5+0.5*boxwidth,y0,1,0,arrow-0.5*circle,colors(3,:))
+f_circle (0.5+0.5*boxwidth+arrow,y0,circle,colors(3,:))
+text (0.5+0.5*boxwidth+arrow+0.04,y0,'y(k)','Color',colors(3,:),'HorizontalAlignment','center');

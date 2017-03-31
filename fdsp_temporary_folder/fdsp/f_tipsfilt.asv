@@ -1,0 +1,31 @@
+% GUI module => g_filters
+%
+% User tips:
+% 
+% 1. All changes to edit box parameters are activated with 
+%    the Enter key.
+%
+%    F_0     = lower cutoff frequency
+%    F_1     = upper cutoff frequency
+%    B       = width of transition band
+%    fs      = sampling frequency
+%    delta_p = passband ripple
+%    delta_s = stopband attenuation
+%
+% 2. Use the slider bar to adjust the number of bits N 
+%    used for coefficient quantization.
+%
+% 3. The User-defined filter option requires the name of a
+%    MAT-file containing the coefficient vectors a and b, 
+%    and the sampling frequency fs.
+%
+% 4. The Menu options include the following:
+%
+%    Realization => direct-form, cascade-form realizations
+%    Save        => save x,y,a,b,fs in a MAT-file
+%    Caliper     => find coordinates of point on plot
+%    Print       => send screen to printer or a file
+%    Help        => user tips and g_filters help
+%    Exit        => return to calling program
+%
+% 5. Direct-form realizations of IIR filters with

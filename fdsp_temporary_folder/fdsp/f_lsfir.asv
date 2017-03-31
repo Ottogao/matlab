@@ -1,0 +1,47 @@
+function w = f_lsfir (x,d,m)
+
+%F_LSFIR: System identification using offline least-squares method with FIR filter
+%
+%       y(k) = w(1)x(k) + w(2)x(k-1) + ... + w(m+1)x(k-m)
+%
+% Usage: w = f_lsfir (x,d,m)
+%
+% Inputs: x    = N by 1 vector containing input samples
+%         d    = N by 1 vector containing desired output samples
+%         m    = order of transversal filter (m < N)
+%
+% Outputs: w = (m+1) by 1 leat-squares weight vector of filter coefficients
+%
+% See also: F_LSIIR
+   
+% Initialize
+
+N = length(x);
+m = f_clip (m,0,N-1,3,'f_lsfir');
+X = zeros (N,m+1);
+w = zeros(m+1,1);
+q = f_torow (x);
+
+% Construct normal equations
+
+for i = 1 : N
+    if i <
+    X(i,:) = q(ii:i+m);
+    
+        
+theta = zeros(m+1,1);
+e = zeros(size(x));
+q = f_tocol(x); 
+
+% Find optimal weight vector
+
+for k = 1 : N
+   if k < (m+1)
+       theta(1:k) = q(k:-1:1);
+   else
+       theta = q(k:-1:k-m);
+   end
+   e(k) = d(k) - w'*theta;
+   w = w + 2*mu*e(k)*theta;
+end
+%-----------------------------------------------------------------------

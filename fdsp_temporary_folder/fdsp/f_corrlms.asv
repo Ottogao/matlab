@@ -1,0 +1,49 @@
+function [w,e] = f_corrlms (x,d,m,alpha,beta,w)
+%-----------------------------------------------------------------------
+% Usage:       [w,e] = f_corrlms (x,d,m,alpha,beta,w)
+%
+% Description: Identify the parameters an mth order adaptive 
+%              transversal (FIR) filter using the correlation LMS 
+%              method. The filter output is
+%
+%              y(k) = w(1)x(k) + w(2)x(k-1) + ... + w(m+1)x(k-m)
+%
+% Inputs:      x     = N by 1 vector containing input samples
+%              d     = N by 1 vector containing desired output samples
+%              m     = order of transversal filter (m >= 0)
+%              alpha = scalar containing relative step size
+%              beta  = an scalar containing the smoothing parameter. 
+%                      beta is approximately one with 0 < beta < 1.
+%                      (default: 0.97).
+%              w     = an optional (m+1) by 1 vector containing the
+%                      initial values of the weights (default: w = 0)
+%
+% Outputs      w  = (m+1) by 1 weight vector of filter coefficients
+%              e  = an optional N by 1 vector of errors where 
+%                   e(k) = d(k)-y(k)
+%              mu = an optional N by 1 vector containing step sizes  
+%-----------------------------------------------------------------------
+   
+% Initialize
+
+m = f_clip (m,0,m);
+N = length(x);
+if (nargin < 5) | (beta == [])
+   beta = 0.97;
+end
+if nargin 
+theta = zeros(m+1,1);
+e = zeros(N,1);
+ 
+% Find optimal weight vector
+
+for k = 1 : N
+   if k < (m+1)
+       theta(1:k) = x(1:k);
+   else
+       theta = x(k-m:k);
+   end
+   e(k) = d(k) - w'*theta;
+   w = w + 2*mu*e(k)*theta;
+end
+%-----------------------------------------------------------------------

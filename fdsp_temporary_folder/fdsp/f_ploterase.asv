@@ -1,0 +1,41 @@
+function f_ploterase (han)
+
+%F_PLOTERASE: Erase the the plot area used by GUI modules
+%
+% Inputs:
+%          han= array of axes handles
+
+for i = 6 : 10
+    axes (han(i))
+    cla
+    
+
+axes(han(7))
+cla
+f_labels ('','','');
+axis off
+
+axes(han(8))
+cla
+f_labels ('','','')
+axis off
+
+axes(han(9))
+cla
+f_labels ('','','')
+axis off
+
+axes(han(108))
+cla
+f_labels ('','','')
+axis off
+
+
+axes(han(6))
+cla
+f_labels ('','','')
+axis off
+legend off
+
+hold off
+

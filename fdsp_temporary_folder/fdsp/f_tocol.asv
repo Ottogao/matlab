@@ -1,0 +1,20 @@
+function y = f_tocol (x)
+
+%F_TOCOL: Convert to a column vector
+%
+% Usage: y = f_tocol (x)
+%
+% Inputs:  x = input vector or matrix
+%
+% Outputs: y =n by 1 column vector containing elements of x
+%-------------------------------------------------------------------------------
+
+[r,c] = size(x);
+if c > r
+   y = x';
+else
+   y = x;
+end
+
+%---------------------------------------------------------------------------------
+  

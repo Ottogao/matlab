@@ -1,0 +1,9 @@
+% FDSP toolbox
+% Version 1.0 (R1) 24-May-2004
+% Path ->  C:\MATLAB6p5p1\toolbox\fdsp
+%
+%   MakeContents   - makes Contents file in current working directory.
+%   cleanpath      - Remove all references to FDSP from the current MATLAB path
+%   copy_solutions - Copy problem solution files from chapter k to solutions directory
+%   tbclean        - Removes fdsp.
+% Modified at 24-May-2004 15:18:42 by MAKEINSTALL

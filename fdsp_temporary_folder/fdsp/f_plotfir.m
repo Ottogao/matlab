@@ -1,0 +1,223 @@
+function f_plotfir (pv,han,fs,hc_dB,a,b,xm,method,win,F_0,F_1,B,delta_p,delta_s,user,fsize)
+
+%F_PLOTFIR: Plot selected view for GUI module G_FIR
+%
+% Usage: f_plotfir (pv,han,fs,dB,a,b,xm,method,win,F_0,F_1,B,delta_p,delta_s,user,fsize)
+%
+% Inputs: 
+%         pv      = view selector
+%         han     = array of axes handles
+%         fs      = sampling frequency
+%         hc_dB   = handle to dB checkbox 
+%         a       = coefficients of denominator polynomial
+%         b       = coefficients of numerator polynomial
+%         xm      = filter type
+%         method  = filter design method (1 to 3)  
+%         win     = window type (0 to 3)
+%         F_0     = low frequency cutoff
+%         F_1     = high frequency cutoff
+%         B       = transition bandwidth
+%         delta_p = passband ripple factor
+%         delta_s = stopband attenuation factor
+%         user    = string containing name of user-supplied amplitude
+%                   response M-file function
+%         fsize   = font size 
+
+% Initialize
+
+dB = get (hc_dB,'Value');
+colors = get(gca,'ColorOrder');
+p = 512;
+m = length(b)-1;
+A_p = -20*log10(1-delta_p);
+A_s = -20*log10(delta_s);
+f_type = xm - 1;
+f_ploterase (han)
+
+switch f_type
+    case 0, caption = 'Lowpass';
+    case 1, caption = 'Highpass';
+    case 2, caption = 'Bandpass';
+    case 3, caption = 'Bandstop';
+    case 4, 
+        user1 = f_cleanstring (user);
+        caption = sprintf ('User-defined filter from file %s, ',user1);
+end
+
+switch method
+   
+   case 0, caption = [caption ' windowed filter, rectangular window'];
+   case 1, caption = [caption ' windowed filter, Hanning window'];
+   case 2, caption = [caption ' windowed filter, Hamming window'];
+   case 3, caption = [caption ' windowed filter, Blackman window'];
+   case 4, caption = [caption ' frequency-sampled filter'];
+   case 5, caption = [caption ' least-squares filter'];
+   case 6, caption = [caption ' equiripple filter'];
+      
+end
+
+caption = [caption sprintf(': m = %d',m)];
+
+% Plot results
+
+switch pv
+
+case 1,                                               % magnitude response 
+
+   axes (han(6))
+   axis on
+   [H,f] = f_freqz (b,a,p,fs);
+   A = abs(H);
+   if dB
+      A = 20*log10(max(A,eps));
+      f_labels (caption,'f (Hz)','A(f) (dB)','',fsize)
+      A_min = 3*A_s;
+      hp(1) = plot (f,A,'Color',colors(2,:),'LineWidth',1.5);
+      if xm < 4
+         axis ([0 fs/2 -A_min 5])
+      end
+   else
+      f_labels (caption,'f (Hz)','A(f)','',fsize)
+      hp(1) = plot (f,A,'Color',colors(2,:),'LineWidth',1.5);
+      if xm < 4
+         axis ([0 fs/2 0 1.2])
+     end
+   end
+   if (dB == 1)
+      f_labels (caption,'f (Hz)','A(f) (dB)','',fsize)
+   else   
+      f_labels (caption,'f (Hz)','A(f)','',fsize)
+   end
+ 
+   hold on
+   switch f_type
+   case {0,1,2,3},
+      
+      if f_type == 0
+         if dB
+            fill ([0 F_0 F_0 0],[-A_p -A_p A_p A_p],'c')
+            fill ([F_0+B fs/2 fs/2 F_0+B],[-A_min -A_min -A_s -A_s],'c')
+         else
+            fill ([0 F_0 F_0 0],[1-delta_p 1-delta_p 1+delta_p 1+delta_p],'c')
+            fill ([F_0+B fs/2 fs/2 F_0+B],[0 0 delta_s delta_s],'c')
+         end
+      end
+     
+      if f_type == 1
+         if dB
+            fill ([F_1 fs/2 fs/2 F_1],[-A_p -A_p A_p A_p],'c')
+            fill ([0 F_1-B F_1-B 0],[-A_min -A_min -A_s -A_s],'c')
+         else
+            fill ([F_1 fs/2 fs/2 F_1],[1-delta_p 1-delta_p 1+delta_p 1+delta_p],'c')
+            fill ([0 F_1-B F_1-B 0],[0 0 delta_s delta_s],'c')
+         end
+      end
+      
+      if f_type == 2
+         if dB
+            fill ([0 F_0-B F_0-B 0],[-A_min -A_min -A_s -A_s],'c')
+            fill ([F_0 F_1 F_1 F_0],[-A_p -A_p A_p A_p],'c')
+            fill ([F_1+B fs/2 fs/2 F_1+B],[-A_min -A_min -A_s -A_s],'c')
+         else
+            fill ([0 F_0-B F_0-B 0],[0 0 delta_s delta_s],'c')
+            fill ([F_0 F_1 F_1 F_0],[1-delta_p 1-delta_p 1+delta_p 1+delta_p],'c')
+            fill ([F_1+B fs/2 fs/2 F_1+B],[0 0 delta_s delta_s],'c')
+         end
+      end
+      
+      if f_type == 3
+         if dB
+            fill ([0 F_0-B F_0-B 0],[-A_p -A_p A_p A_p],'c')
+            fill ([F_0 F_1 F_1 F_0],[-A_min -A_min -A_s -A_s],'c')
+            fill ([F_1+B fs/2 fs/2 F_1+B],[-A_p -A_p A_p A_p],'c')
+         else
+            fill ([0 F_0-B F_0-B 0],[1-delta_p 1-delta_p 1+delta_p 1+delta_p],'c')
+            fill ([F_0 F_1 F_1 F_0],[0 0 delta_s delta_s],'c')
+            fill ([F_1+B fs/2 fs/2 F_1+B],[1-delta_p 1-delta_p 1+delta_p 1+delta_p],'c')
+         end
+      end
+      
+   end
+   plot (f,A,'Color',colors(2,:),'LineWidth',1.5)
+   
+% Add ideal magnitude response
+
+   p = [f_type F_0 F_1 B];
+   switch f_type
+   case {0,1,2,3},
+      A0 = f_firamp (f,fs,p);
+      if dB
+         A0 = 20*log10(max(abs(A0),1.e-4));
+      else
+         A0 = abs(A0);
+      end
+      hp(2) = plot (f,A0,'k');
+   case 4,
+      A0 = feval (user,f,fs);
+      if dB
+         A0 = 20*log10(max(abs(A0),1.e-4));
+      else
+         A0 = abs(A0);
+      end
+      hp(2) = plot (f,A0,'k');
+   end
+
+% Add legend
+
+   legpos = [1 2 1 4 1];
+   hl = legend (hp,'FIR filter','Ideal',legpos(f_type+1));
+   set (hl,'FontName','FixedWidthFontName','FontSize',fsize)
+   hold off
+   
+case 2,                                               % phase response  
+   
+   axes (han(6))
+   axis on
+   [H,f] = f_freqz (b,a,p,fs);
+   phi = angle(H);
+   plot (f,phi,'Color',colors(2,:))
+   f_labels (caption,'f (Hz)','\phi','',fsize)
+   
+case 3,                                               % impulse response
+   
+   axes (han(7))
+   axis on
+   hold off 
+   box off
+   f_impulse (b,a,p,64,0,1,'Impulse response',fsize);
+   axes (han(8))
+   axis on
+   f_pzplot (b,a,caption,fsize);
+   
+case 4,                                               % pole-zero plot
+   
+   axes (han(7))
+   f_pzplot (b,a,caption,fsize);
+   axes (han(8))
+   axis on
+   hold off 
+   box off
+   f_impulse (b,a,p,64,0,1,'Impulse response',fsize);
+   
+case 5,                                                 % window
+   
+   axes (han(6))
+   axis on
+   w = f_window(win,m);
+   i = 0 : m;
+   switch f_clip(win,0,3)
+      case 0, title = sprintf('Rectangular window');
+      case 1, title = sprintf('Hanning window');
+      case 2, title = sprintf('Hamming window');
+      case 3, title = sprintf('Blackman window');
+   end
+   if (dB == 1)
+      w1 = real(20*log10(max(w,sqrt(eps))));
+      plot (i,w1,'Color',colors(2,:))
+      f_labels (title,'i','w(k) (dB)','',fsize)
+   else
+      plot (i,w,'Color',colors(2,:))
+      f_labels (title,'i','w(k)','',fsize)
+   end
+
+end

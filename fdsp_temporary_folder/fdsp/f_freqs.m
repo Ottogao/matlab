@@ -1,0 +1,41 @@
+function [H,f] = f_freqs (b,a,N,fmax)
+
+%F_FREQS: Compute freqeuncy response of continuous-time system
+%
+%                b(1)s^m + b(2)s^(m-1) + ... + b(m+1)
+%         H(s) = --------------------------------------
+%                a(1)s^n + a(2)s^(n-2) + ... + a(n+1)  
+%
+% Usage: [H,f] =f_freqs (b,a,N,fmax);
+%
+% Inputs: 
+%         b    = numerator polynomial coefficient vector  
+%         a    = denominator polynomial coefficient vector 
+%         N    = number of discrete frequencies 
+%         fmax = maximum frequency (0 <= f <= fmax)
+% Outputs: 
+%          H = 1 by N complex vector containing the 
+%              frequency response
+%          f = 1 by N vector containing frequencies at 
+%              which H is evaluated
+%
+% Notes:  H(s) must be stable.  Thus the roots of a(s) must
+%         lie strictly in the left half plane. 
+%
+% See also: F_FREQZ, F_FREQ
+
+% Initialize
+
+H = zeros(1,N);
+f = linspace(0,fmax,N);
+poles = roots(a);
+sigma = min(real(poles));
+if sigma >= 0
+   fprintf ('\nThe filter in f_freqs is not stable.\n')
+   return
+end
+
+% Compute frequency response
+
+omega = j*2*pi*f;
+H = polyval(b,omega) ./ polyval(a,omega);

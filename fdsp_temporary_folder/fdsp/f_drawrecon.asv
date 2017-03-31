@@ -1,0 +1,71 @@
+function f_drawrecon (h,colors)
+
+%F_DRAWRECON: Draw a block diagram for GUI module g_reconstruct
+%
+% Usage:   f_drawrecon (h,colors);
+%
+% Input: h      = axis handle
+%        colors = array of plotting colors
+ 
+% Initialize
+
+ylim = get(h,'Ylim');
+xlim = get(h,'Xlim');
+y0 = (ylim(2)-ylim(1))/2;
+axes (h);
+hold on
+arrow = 0.1;
+boxwidth = 0.2;
+boxheight = 0.2;
+circle = 0.02;
+
+% Draw block diagram
+
+f_circle (0.5-1.5*arrow-boxwidth,y0,circle,colors(3,:));
+text (0.5-1.5*arrow-boxwidth-0.03,y0,'y','Color',colors(3,:),'HorizontalAlignment','center');
+f_vector (0.5-1.5*arrow-boxwidth+0.5*circle,y0,1,0,arrow-0.5*circle,colors(3,:))
+f_block (0.5-0.5*arrow-boxwidth,y0-0.5*boxheight,boxwidth,boxheight,colors(2,:))
+f_vector (0.5-0.5*arrow,y0,1,0,arrow,colors(2,:))
+text (0.5,1.20*y0,'x_b','Color',colors(2,:),'HorizontalAlignment','center');
+f_block (0.5+0.5*arrow,y0-0.5*boxheight,boxwidth,boxheight,colors(3,:))
+text (0.5+0.5*arrow+0.5*boxwidth,y0,'ADC','HorizontalAlignment','center')
+f_line (0.5+0.5*arrow+boxwidth,y0,1,0,arrow-0.5*circle,colors(3,:))
+f_circle (0.5+1.5*arrow+boxwidth,y0,circle,colors(3,:))
+text (0.5+1.5*arrow+boxwidth+0.03,y0,'x','Color',colors(3,:),'HorizontalAlignment','center');
+
+% function [pos,colors,h] = f_drawrecon
+
+%F_DRAWRECON: Draw a block diagram for GUI module g_reconstruct
+%
+% Usage:   [pos,colors,h] = f_drawsamp;
+%
+% Outputs: pos    = position of axes for block diagram
+%          h      = axis handle
+%          colors = array of plotting colors 
+ 
+% Draw block diagram
+
+%h = subplot(2,1,1);
+%cla
+%colors = get(gca,'ColorOrder');
+%pos = get(gca,'Position');
+%hold on
+%f_circle (5,50,2,colors(3,:));
+%f_vector (6,50,1,0,9,colors(3,:))
+%f_block (15,40,20,20,colors(2,:))
+%text (25,50,'DAC','HorizontalAlignment','center')
+%f_vector (35,50,1,0,10,colors(2,:))
+%t1 = text (38,54,'y_b');
+%set(t1,'Color',colors(2,:))
+%f_block (45,40,20,20,colors(1,:))
+%text (55,55,'anti-','HorizontalAlignment','center')
+%text (55,50,'imaging','HorizontalAlignment','center')
+%text (55,45,'filter','HorizontalAlignment','center')
+%f_line (65,50,1,0,9,colors(1,:))  
+%f_circle (75,50,2,colors(1,:))
+%t0 = text (0,50,'y');
+%set(t0,'Color',colors(3,:))
+%t2 = text (77,50,'y_a');
+%set(t2,'Color',colors(1,:))
+%axis([0 170 0 60])
+%axis off

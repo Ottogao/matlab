@@ -1,0 +1,67 @@
+function d = f_filtnorm (b,a,p);
+
+%F_FILTNORM: Return L_p norm of filter H(z) = b(z)/a(z)
+%
+% Usage: d = f_filtnorm (b,a,p)
+%
+% Inputs: b = vector of length m+1 containing coefficients of 
+%             numerator polynomial.
+%         a = vector of length n+1 containing coefficients of 
+%             denominator polynomial.
+%         p = integer specifying norm type.  Use p = Inf for
+%             the infinity norm
+%
+% Outputs: d = the L_p norm, ||h||_p
+%
+
+% Initialize
+
+r = 500;
+
+% Find impulse response
+
+h = f_impul
+
+n = length(a) - 1;
+m = length(b) - 1;
+N = floor((n+1)/2);
+if  (m > n) | (abs(polyval(a,0)) < eps)
+   fprintf ('\nFunction f_parallel requires that H(z) not have any poles at z = 0.\n')
+   R_0 = 0;
+   B = 0;
+   A = 1;
+   f_wait
+   return
+end
+
+% Add pole at z = 0
+
+if (m < n)
+    b = [f_torow(b),zeros(n-m)];
+    m = n;
+end
+
+% Sort poles and residues
+
+[R,p,K] = residue (b,a);
+[p,J] = sort(p);
+R = R(J);
+R = R ./ p;
+R_0 = K - sum(R);
+
+% Compute second-order blocks
+
+k = 1;
+for i = 1 : N
+   if (mod(n,2) == 0) | (i < N)
+      B(i,1:3) = [R(k)+R(k+1), -(R(k)*p(k+1)+R(k+1)*p(k)), 0];
+      A(i,1:3) = [1, -(p(k)+p(k+1)), p(k)*p(k+1)];
+      k = k + 2;
+   else
+      B(N,1:3) = [R(k), 0, 0];
+      A(N,1:3) = [1, -p(k), 0];
+      k = k + 1;
+   end
+end
+%---------------------------------------------------------------------------------
+  

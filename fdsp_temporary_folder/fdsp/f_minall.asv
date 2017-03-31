@@ -1,0 +1,51 @@
+function [B_min,A_min,B_all,A_all] = f_minall (b,a)
+
+%F_MINALL: Factor IIR fitler into minimum-phase and allpass parts
+%
+% Usage: [B_min,A_mim,B_all,A_all] = f_minall (b,a)
+%
+% Inputs: b   = vector of length m+1 containing coefficients of 
+%               numerator polynomial.
+%         a   = vector of length n+1 containing coefficients of 
+%               denominator polynomial (n >= m).
+%
+% Outputs: B_min = (q+1) by 1 vector containing numerator coefficients
+%                  of minimum-phase part  
+%          A_min = (r+1) by 1 vector containing denominator coefficients
+%                  of minimum-phase part  
+%          B_all = (s+1) by 1 vector containing numerator coefficients
+%                  of allpass part  
+%          A_all = (s+1) by 1 vector containing denominator coefficients
+%                  of allpass part  
+%-------------------------------------------------------------------------------
+
+% Initialize
+
+b0 = b(1);
+z = roots(b);
+m = length(z);
+B_all = 1;
+A_all = 1;
+B_min = f_torow(b);
+A_min = f_torow(a);
+
+% Decompose into minimum-phase and allpass parts
+
+for i = 1 : m
+   if abs(z(i)) > 1
+      Fb = [-z(i) 1];
+      Fa = [1 -z(i)];
+      [B_min,R] = deconv (B_min,Fa);
+      B_min = conv (B_min,Fb);
+      B_all = conv (B_all,Fa);
+      A_all = conv (A_all,Fb);
+   end
+end
+
+% Finalize
+
+B_all = B_all/A_all(1);
+A_all = A_all/A_all(1);
+
+%---------------------------------------------------------------------------------
+  

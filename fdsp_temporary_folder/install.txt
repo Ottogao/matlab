@@ -1,0 +1,42 @@
+                        INSTALL.TXT
+ 
+ ------------
+ Requirements
+ ------------
+
+ 1. Windows 98 or later
+ 2. MATLAB Version 6.1 or later 
+ 3. Adobe Acrobat Reader (for viewing problem solutions)        
+
+ ---------------
+ CD Installation
+ ---------------
+
+ 1. Place the FDSP distribution CD in drive D (for example)
+
+ 2. Run MATLAB and issue the following commands:
+  
+    cd d:\       % for CD in drive D
+    setup
+
+ ---------------------     
+ Internet Installation
+ ---------------------
+
+ 1. Exit MATLAB
+ 
+ 2. Use a web browser to go to the FDSP course web page:
+   
+    www.clarkson.edu/~schillin/fdsp
+      
+ 3. Select FDSP Toolbox Download and then select Open.
+    This will download the FDSP files into directory:  
+    
+    c:\fdsp_net
+  
+ 4. Run MATLAB and issue the following commands:
+
+    cd c:\fdsp_net    
+    setup
+
+ 

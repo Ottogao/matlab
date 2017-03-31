@@ -1,0 +1,62 @@
+% Make the self-extracting FDSP executable file one.exe for CD
+
+% Initialize
+
+fdsp_file   = 'one'; 
+temp_folder = 'c:\fdsp_temporary_folder';
+winzipdir   = 'c:\Program Files\WinZip';
+wzipsedir   = 'c:\Program Files\WinZip Self-Extractor';
+fdspdir     = 'c:\fdsp';
+zipdir      = 'c:\zipped';
+
+cmd1      = ['wzzip ' zipdir '\' fdsp_file '.zip ' netfiles];
+
+cmd1        = ['winzip32' ];
+cmd2        = ['wzipse32 ' zipdir '\' fdsp_file ' -d ' temp_folder ' -auto'];  
+
+% Create zip file
+
+cd (zipdir)
+delete ([fdsp_file '.zip'])
+cd (fdspdir)
+delete ([fdsp_file '.exe'])
+cd (winzipdir)
+system (cmd1);
+
+% Create executable
+
+cd (wzipsedir)
+system (cmd2);
+copyfile ([zipdir '\' fdsp_file '.exe'],fdspdir);
+cd (fdspdir)
+d = dir([fdsp_file '.exe'])
+
+
+clear
+clc
+fdsp_file = 'preface'; 
+fdspdir   = 'c:\book4\web\fdsp_page_files';
+tempdir   = 'c:\fdsp_net';
+winzipdir = 'c:\Program Files\WinZip';
+wzipsedir = 'c:\Program Files\WinZip Self-Extractor';
+netfiles  = [fdspdir '\' fdsp_file '.pdf'];
+cmd1      = ['wzzip ' fdspdir '\' fdsp_file '.zip ' netfiles];
+cmd2      = ['wzipse32 ' fdspdir '\' fdsp_file ' -d ' tempdir ' -auto -c ' fdsp_file '.pdf'];  
+
+% Create zip file
+
+clc
+cd (fdspdir)
+delete ([fdsp_file '.zip'])
+delete ([fdsp_file '.exe'])
+cd (winzipdir)
+system (cmd1);
+
+% Create executable
+
+cd (wzipsedir)
+system (cmd2);
+cd (fdspdir)
+d = dir([fdsp_file '.exe'])
+cd ..
+what

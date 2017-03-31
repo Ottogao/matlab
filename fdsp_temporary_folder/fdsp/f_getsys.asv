@@ -1,0 +1,89 @@
+function [x,N,fs,a,b,user,xm,xm_old] = getsys (xm,xm_old,N,N_max,fs,f0,a,b,c,x,user,hc_type);
+
+%F_GETSYS: Compute input for GUI module G_SYSTEM
+%
+% Usage: [x,N,fs,a,b,user,xm,xm_old] = getsys (xm,xm_old,N,N_max,fs,f0,a,b,c,x,user,hc_type);
+%
+% Inputs: 
+%         xm      = type of input 
+%
+%                   1 = white noise
+%                   2 = unit impulse
+%                   3 = unit step 
+%                   4 = damped cosine  
+%                   5 = record sound
+%                   6 = user-defined  
+%
+%         xm_old  = previous value for xm
+%         N       = number of samples
+%         N_max   = maximum number of samples
+%         fs      = sampling frequency
+%         f0      = frequency of damped cosine (0 to fs/2)
+%         a       = denominator coefficient vector
+%         b       = numerator coefficient vector
+%         c       = damping factor of damped cosine input
+%         x       = vector of length containing original input sampless 
+%         user    = string containing default name for user MAT-file
+%         hc_type = array of type radio button handles
+% Outputs: 
+%          x      = 1 by N_max vector of zero-padded samples
+%          N      = number of samples
+%          fs     = sampling frequency
+%          a      = denominator coefficient vector
+%          b      = numerator coefficient vector
+%          user   = string containing name for user MAT-file
+%          xm     = type of input
+%          xm_old = previous value for xm
+
+% Initialize
+
+k = [0 : N-1]';
+T = 1/fs;
+
+switch (xm)
+   
+case 1,                                          % white noise   
+   
+   x = f_randu (N,1,-1,1); 
+   
+case 2,                                          % unit impulse
+   
+   x = [1 ; zeros(N-1,1)];
+   
+case 3,                                          % unit step
+   
+   x = ones(N,1);
+   
+case 4,                                          % damped cosine
+   
+   x = c.^k .* cos(2*pi*f0*k*T);
+   
+case 5,                                          % record sound
+   
+  tau = 1.0; 
+  [x,N,xm,fs] = f_record (x,N,tau,fs,xm,xm_old,hc_type)
+   
+case 6,                                          % user defined
+    
+   caption = 'Select MAT-file containing a,b,x,fs';
+   [user1,path] = f_getmatfile (caption,user);
+   if user1 ~= 0
+       user = user1;
+       old_path = pwd;
+       cd (path);
+       load (user,'a','b','x','fs')
+       cd (old_path)
+   else
+       x = x_save;
+   end
+
+end
+
+% Update xm and Check x
+
+xm_old = xm;
+N = length(x);
+if N > N_max
+   x(N_max+1:N) = [];
+   N = N_max;
+end

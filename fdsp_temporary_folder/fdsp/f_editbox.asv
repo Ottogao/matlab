@@ -1,0 +1,58 @@
+function h_edit = f_editbox (vstr,v,vmin,vmax,pos,nbox,ix,iy,fcolor,bcolor,cback,tipstr)
+
+%F_EDITBOX: Create edit box
+%
+% Usage: h = f_editbox (vstr,v,vmin,vmax,pos,nbox,ix,iy,fcolor,bcolor,cback,tipstr)
+%
+% Inputs: 
+%          vstr   = string containing variable name
+%          v      = edit box variable
+%          vmin   = minimum value of v
+%          vmax   = maximum value for v
+%          pos    = axes position vector
+%          nbox   = number of edit boxes per column 
+%          ix     = row index of edit box (1 to nbox)
+%          iy     = vertical index of edit box (1 to 2)
+%          dx     = position vector x offset
+%          dy     = position vector y offset
+%          fcolor = foreground color
+%          bcolor = background color
+%          cback  = callback string
+%          tipstr = tool tip string
+% Outputs:
+%          h_edit = handle of edit box
+
+% Initialize
+
+white = [1 1 1];
+waxis = pos(3);
+haxis = pos(4);
+wbox = 0.45*waxis;
+dw = (waxis - 2*wbox)/3;
+hbox = 0.15*haxis;
+dh = (haxis - nbox*hbox)/(nbox+1);
+
+dw = 0.05*waxis
+
+dw = 0.05*waxis;
+dh = 0.05*haxis;
+wbox = 0.4*waxis;
+hbox = 0.15*haxis;
+pos0 = [pos(1)+dw,pos(2)+haxis-2*hbox-dh,wbox,hbox];
+
+% Create edit box
+
+str_v = [vstr ' = ' mat2str(v) ';'];
+cback1 = ['eval(get(gco,''String'')),' ...
+           vstr '= f_clip(' vstr ',' mat2str(vmin) ',' mat2str(vmax) ');'...
+           cback]; 
+h_edit = uicontrol(gcf,...
+   'Style','edit',...
+   'Units','normalized',...
+   'Position',pos0 + [dx dy 0 0],...
+   'String',str_v,...
+   'ForeGroundColor',fcolor,...
+   'BackGroundColor',bcolor,...
+   'Tooltipstring',tipstr,...
+   'Visible','on',...
+   'Callback',cback1);

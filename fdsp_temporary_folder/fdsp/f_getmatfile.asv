@@ -1,0 +1,66 @@
+function [fname,fexist] = f_getmatfile (default,prompt); 
+
+%F_GETNATFILE: Prompt the user for the name of an M-file function
+%
+% Usage: [fname,exist] = f_getmatfile (default,prompt)
+%
+% Inputs: 
+%         default = string containing name of default MAT-file function 
+%         prompt  = prompt string
+%
+% Outputs: 
+%          fname = string containing name of MAT file (no .MAT)
+%          fexist = nonzero if file exists, zero otherwise
+%
+% See also: F_GETMAT
+
+% Prompt for name of MAT-file
+
+ver  = version;
+if all(ver(1:3) == '6.1')
+    [user,path] = uigetfile ('.mat',prompt);
+else
+    [user,path] = uigetfile ('*.mat',prompt,default);
+end
+
+
+if nargin < 2
+   [fname,pname] = uigetfile ('*.mat','Select MAT-file',default);
+else
+   [fname,pname] = uigetfile ('*.mat',prompt,default);
+end
+
+% Check for no response
+
+if prod(size(fname)) == 0
+   fname = default;
+end
+
+% Check if file is in MATLAB path
+
+if exist([fname '.M']) == 2
+   fexist = 1;
+else
+   fexist = 0;
+end
+
+
+   caption = 'Select MAT file containing x,fs,a,b';
+   ver  = version;
+   if all(ver(1:3) == '6.1')
+       [user,path] = uigetfile ('.mat',caption);
+   else
+       [user,path] = uigetfile ('*.mat',caption,user);
+   end
+   if ~isequal(user,0)
+       old_path = pwd;
+       cd (path);
+       load (user)
+       cd (old_path)
+   end
+   N = length(x);
+   if N > N_max
+      x(N+1:M_max) = [];
+      N = N_max;
+   end
+

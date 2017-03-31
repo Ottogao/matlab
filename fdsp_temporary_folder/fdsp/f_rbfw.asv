@@ -1,0 +1,91 @@
+function [w,e] = f_rbfw (f,N,a,b,m,n,d,mu,ic,w)
+
+% F_RBFW: Nonlinear system identification using an RBF network
+%
+% Usage: [w,e] = f_rbfw (f,N,a,b,m,n,d,mu,ic,w)
+%
+% Inputs: 
+%         f  = string containing name of user-supplied
+%              function which specifies the right-hand
+%              side of the nonlinear discrete-time system.
+%
+%              y(k)     = f(theta(k),m,n)
+%              theta(k) = [x(k),...,x(k-m),y(k-1),...,y(k-n)]'
+%
+%         N    = number of training samples (N >= 0). 
+%               If N = 0,the weight returned is the initial weight 
+%                computed according to input ic.
+%         a    = 2 by 1 vector of input bounds
+%         b    = 2 by 1 vector of output bounds
+%         m    = number of past inputs (m >= 0)
+%         n    = number of past outputs (n >= 0)
+%         d    = number of grid points per dimension
+%         mu   = step length for gradient search
+%         ic = an initial condition code.  If ic <> 0,
+%              compute the initial weights to ensure that
+%              the network is exact at the grid points.
+%         w    = an optional r by 1 vector containing the
+%                initial values of the weights (default: w = 0)
+% Outputs:
+%          w = r by 1 weight vector
+%          e = an optional N by 1 vector of errors where 
+%              e(k) = y(k)-y_0(k)
+% Notes: 
+%        1. r = d^p where p = m+n+1
+%        2. A good value for the initial w is w(i) = f(theta(i)).
+%
+% See also: F_RBFV
+
+% Initialize
+
+m = f_clip (m,0,m);
+n = f_clip (n,0,n);
+d = f_clip (d,2,d);
+N = f_clip (N,0,N);
+p = m + n + 1;
+r = d^p;
+theta = zeros(p,1);
+if ic
+    for i = 0 : r-1
+        theta = f_gridpoint (i,a,b,m,n,d);
+        w(i+1) = feval(f,theta,m,n);
+    end
+    if N < 1
+        e = 0;
+        return
+    end
+end
+if nargin < 10
+   w = zeros(r,1);
+end
+e = zeros(N,1);
+y = zeros(N,1); 
+M = 2^p;
+z = zeros(M,1);
+Vert = zeros(p,M);
+x = f_randu (N,1,a(1),a(2));
+
+% Find optimal weight vector
+
+caption = '';
+h = waitbar (0,caption);
+for k = 1 : N
+    waitbar (k/N,h,caption);
+    theta = f_state(x,y,k,m,n);
+    y(k) = feval(f,theta,m,n);
+    [index,Vert] = f_neighbors (theta,a,b,m,n,d);
+    y_0 = 0;
+    for j = 1 : M
+        z(j) = f_rbfg (theta-Vert(:,j),a,b,m,n,d);
+        y_0 = y_0 + w(index(j)+1)*z(j);
+    end
+    e(k) = y(k) - y_0;
+    for j = 1 : M
+        s = index(j) + 1;
+        w(s) = w(s) + 2*mu*e(k)*z(j);
+    end
+    if mod(k,N/100)
+        caption = sprintf ('e^2 = %10.6f',e(k)^2);
+    end
+end
+close (h)

@@ -1,0 +1,15 @@
+function x_a = u_reconstruct1 (t)
+
+%U_RECONSTRUCT1: Example user file for GUI module G_RECONSTRUCT
+%
+% Usage: x_a = u_reconstfir1 (f,fs);
+%
+% Inputs: f  = vector of input frequencies in the range [0,fs/2]
+%         fs = sampling frequency
+%
+% Outputs: A = desired magnitude response vector evalutated at f 
+
+%----------------------------------------------------------------
+% Example User Input Function 
+%----------------------------------------------------------------
+x_a = -exp(-2*t) + t .* exp(-t) ./ (.1 + (1.5 - t).^2);

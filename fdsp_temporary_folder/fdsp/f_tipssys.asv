@@ -1,0 +1,22 @@
+%                                   GUI Module g_system
+%                                       User Tips
+%
+% 1. All changes to edit box parameters are activated with the Enter key.
+%
+%      a   = vector of denominator coefficients, a(1) = 1
+%      b  = vector of numerator coefficients
+%      c  = damping factor of damped cosine input
+%      f aging filter order (0 = no filter)
+%      Fc = anti-imaging filter cutoff frequency
+
+
+% 2. To remove the noise from the signals, set a = 0 and b = 0
+% 
+% 3. The cosine input has frequency fa Hz.
+%
+% 4. The pulse input has at 50 percent duty cycle.
+%
+% 5. The length of the subsequences for power density spectrum estimation is L = N/4.
+%
+% 6. For the User-Defined input, you must supply the file name of a MAT file that contains
+%    the input vector x and the sampling frequency fs.

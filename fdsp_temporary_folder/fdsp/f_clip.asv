@@ -1,0 +1,21 @@
+fdsfunction y = f_clip (x,a,b,k,s)
+% F_CLIP: Clip a value or a calling argument to an interval
+%
+% Usage: y = f_clip (x,a,b,k,s)
+%
+% Entry: x = input to be clipped
+%        a = lower limit of clip range
+%        b = upper limit of clip range
+%        k = an optional integer specifying the number of
+%            the calling argument
+%        s = an optional string specifying the name of the
+%            function being called.
+%
+% Exit: y = x clipped to interval [a,b].  If a <= x <= b,
+%           then y = x.
+
+y = min(x,b);
+y = max(y,a);
+if (nargin >= 5) and y ~= x
+    fprintf ('\nCalling argument %d of %s was clipped to [%g,%g].\n',k,s,a,b);
+end

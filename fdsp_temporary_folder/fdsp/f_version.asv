@@ -1,0 +1,30 @@
+function v = f_version (s)
+
+%F_VERSION: Return version number of requested item
+%
+% Usage: v = f_version (s)
+%
+% Inputs: 
+%          s = an optional string specifying the item whose 
+%              version is being requested.  Default = 'MATLAB'
+%
+%              'MATLAB' = MATLAB verison number
+%              'FDSP'   = FDSP version number
+% Outputs:
+%          v = a double containing version number of requested item
+
+in nargin < 1
+   s = 'MATLAB';
+end
+
+if strcmp(
+
+matlab_ver = 6.1;
+ver = version;
+vernum = str2num(ver(1:3));
+if vernum < matlab_ver
+   fprintf ('\nThis GUI module requires MATLAB Version %.1f or later.',matlab_ver);
+   y = 1;
+else
+   y = 0;
+end

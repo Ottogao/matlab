@@ -1,0 +1,70 @@
+function [b,a] = f_cheby1s (F_p,F_s,delta_p,delta_s,n)
+
+%F_CHEBY1S: Design Chebyshev-I lowpass analog filter
+%
+%                                     b(1)
+%              H(s) = ------------------------------------
+%                     a(1)s^n + a(2)s^(n-1) + ... + a(n+1)
+%
+% Usage: [b,a] = f_cheby1s (F_p,F_s,delta_p,delta_s,n)
+%
+% Inputs: 
+%         F_p     = passband cutoff frequency in Hz
+%         F_s     = stopband cutoff frequency in Hz 
+%                   (F_s > F_p)
+%         delta_p = passband ripple
+%         delta_s = stopband attenuation
+%         n       = an optional integer specifying the 
+%                   filter order.  If n is not present, 
+%                   the smallest order which meets the 
+%                   specifications is used.
+% Outputs: 
+%          b = numerator coefficient 
+%          a = 1 by (n+1) coefficient vector of 
+%              denominator polynomial 
+%
+% See also: F_BUTTERS, F_CHEBY2S, F_ELLIPTICS
+
+% Initialize
+
+F_p = f_clip (F_p,0,F_p);
+F_s = f_clip (F_s,F_p,F_s);
+delta_p = f_clip (delta_p,0,delta_p);
+delta_s = f_clip (delta_s,0,delta_s);
+
+% Find filter order
+
+r = F_p / F_s;
+d = sqrt(((1 - delta_p)^(-2) - 1)/(delta_s^(-2) - 1));
+if nargin < 5
+   n = ceil(acosh(d^(-1))/acosh(r^(-1)));
+end
+n = f_clip(n,1,n);
+
+% Find poles
+
+epsilon = sqrt((1-delta_p)^(-2)-1);
+k = 0 : n-1;
+theta = pi*(2*k+1+n)/(2*n);
+F_0 = F_p;
+alpha = epsilon^(-1)+ sqrt(epsilon^(-2)+1);
+r_1 = pi*F_0*(alpha^(1/n) - alpha^(-1/n));
+r_2 = pi*F_0*(alpha^(1/n) + alpha^(-1/n));
+sigma = r_1*cos(theta);
+omega = r_2*sin(theta);              
+              
+%sigma = 2*pi*F_0*sinh((1/n)*asinh(1/epsilon))*cos(theta);
+%omega = 2*pi*F_0*cosh((1/n)*asinh(1/epsilon))*sin(theta);
+
+p = sigma + j*omega;
+
+% Compute coefficients
+
+a = real(poly(p));
+gamma = (-1)^n*prod(p);
+if mod(n,2) == 0
+   A0 = sqrt(1/(1 + epsilon^2));
+else
+   A0 = 1;
+end
+b = real(gamma*A0);

@@ -1,0 +1,58 @@
+function hc_check = f_checkbox (c,pos,nbox,row,col,label,fcolor,bcolor,cback,tipstr,fsize)
+
+%F_CHECKBOX: Create a check box control
+%
+% Usage: hc_check = f_checkbox (c,pos,nbox,row,col,label,fcolor,bcolor,cback,tipstr);
+%
+% Inputs: 
+%           c      = value of check box variable (0 = unchecked, 1 = checked) 
+%           pos    = position vector of axes
+%           nbox   = number of items per column
+%           row    = row number (1 to nbox)
+%           col    = column number (1 to 2)
+%           dx     = x axis offset
+%           dy     = y axis offset
+%           label  = string containing check box label
+%           fcolor = foreground color
+%           bcolor = background color
+%           cback  = callback string 
+%           tipstr = tooltip string
+% Outputs:
+%           hc_check = handle to checkbox
+
+waxis = pos(3);
+haxis = pos(4);
+dw = (waxis - ncol*wbox)/(ncol+1);
+dh = (haxis - nrow*hbox)/(nrow+1);
+pos0 = [pos(1)+dw+(col-1)*(wbox+dw), pos(2)+haxis-row*(dh+hbox), wbox, hbox];
+
+
+% Initialize
+
+cstr = inputname(1);
+waxis = pos(3);
+haxis = pos(4);
+wbox = 0.84*waxis;
+dw = (waxis - wbox)/3;
+hbox = 0.13*haxis;
+dh = (haxis - nbox*hbox)/(nbox+1);
+pos0 = [pos(1)+dw+(col-1)*(wbox+dw), pos(2)+haxis-row*(dh+hbox), wbox, hbox];
+dz = hbox+dh;
+pos0 = [pos(1)+dw+(col-1)*(wbox+dw), pos(2)+haxis-row*(dh+hbox), wbox, hbox];
+
+% Create check box
+
+hc_check = uicontrol(gcf,...
+   'Style','checkbox',...
+   'Units','normalized',...
+   'FontName','FixedWidthFontName',...
+   'FontSize',fsize,...
+   'Position',pos0,...
+   'Value',c, ...
+   'String',label,...
+   'ForeGroundColor',fcolor,...
+   'BackGroundColor',bcolor,...
+   'Visible','on',...
+   'Tooltip',tipstr);
+cback1 = [cstr ' = 1 - ' cstr '; ' cback];
+set (hc_check,'Callback',cback1)

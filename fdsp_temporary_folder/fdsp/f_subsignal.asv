@@ -1,0 +1,45 @@
+function X = f_subsignals (p)
+% F_SUBSIGNALS: Compute a matrix of bandlimited subsignals
+%
+% Inputs: p = subsignal length
+%
+% Outputs: X = p by 4 matrix containing the samples of four
+%              subsignals in each column. Each subsignal is
+%              bandlimited to fs/4.
+
+fs = 1;
+A = zeros(p,1);
+F_0 = fs/4;
+
+% Construct signals
+
+for k = 1 : 4
+   switch (k)
+      case 1,                                  % cosine
+         for i = 1 : N
+            if abs(f(i)) <= F_0
+                A(i) = cos(pi*f(i)/(2*F_0));
+            end
+         end
+      case 2,
+         for i = 1 : N
+            if abs(f(i)) <= F_0
+                A(i) = 1 - abs(f(i))/F_0;
+            end
+         end
+      case 3,
+          for i = 1 : N
+             if abs(f(i)) <= F_0
+                 A(i) = abs(sin(pi*f(i)/F_0));               
+             end
+          end
+      case 4,
+         for i = 1 : N
+            if abs(f(i)) <= F_0
+                A(i) = 1 - sqrt(abs(f(i))/F_0);
+            end
+         end
+   end
+   X(:,k) = ifft (A);
+end
+ 

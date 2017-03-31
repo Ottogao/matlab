@@ -1,0 +1,22 @@
+%                                   GUI Module g_adapt
+%
+%                                       User Tips
+%
+% 1. All changes to edit box parameters are activated with the Enter key.
+%
+%      a = denominator polynomial coefficients of black box
+%      b = numerator polynomial coefficients of block box
+%      fs = samplng frequency in Hz
+%      m = order of adaptive transversal filter
+%      mu = step size
+%      nu = leakage factor
+%      alpha = normalized step size
+%      beta = smoothing factor
+%      gamma = forgetting factor
+%
+% 2. Use the slider bar to adjust the number transversal filter order m.
+%
+% 3. The Data source checkbox requires the name of a used supplied MAT file containing the 
+%    input vector x, and the desired output vector y
+%
+% 4. The Save menu option saves a,b,x,y,fs in a user-specified MAT-file

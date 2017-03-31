@@ -1,0 +1,19 @@
+%                                    GUI Module g_iir
+%                                       User Tips
+%
+% 1. All changes to edit box parameters are activated with the Enter key.
+%
+%      F_0     = lower cutoff frequency
+%      F_1     = upper cutoff frequency
+%      B       = width of transition band
+%      fs      = sampling frequency
+%      delta_p = passband ripple
+%      delta_s = stopband attenuation
+%
+% 2. Use the slider bar to adjust the IIR filter order n.
+%
+% 3. The User-Defined filter type options requirs the name of a MAT file containing the
+%    coefficient vectors a and b, and the sampling frequence fs.
+%
+% 4. For the Save data menu option, you must choose a file name other than
+%    the ready only file u_iir1.mat. 

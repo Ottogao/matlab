@@ -1,0 +1,54 @@
+function f_drawadapt (h,colors)
+
+%F_DRAWADAPT: Draw a block diagram for GUI module g_adapt
+%
+% Usage: f_drawadapt (h,colors);
+%
+% Input: 
+%        h      = axes handle
+%        colors = array of plotting colors
+ 
+% Initialize
+
+ylim = get(h,'Ylim');
+xlim = get(h,'Xlim');
+y0 = (ylim(2)-ylim(1))/2;
+axes (h);
+hold on
+arrow = 0.1;
+boxwidth = 0.2;
+boxheight = 0.1;
+circle = 0.02;
+summer = 0.06;
+cx = 0.5;
+cy = y0+0.25*boxheight;
+
+% Draw block diagram
+
+f_circle (cx-0.5*boxwidth-2*arrow,cy,circle,colors(1,:));
+text (cx-0.5*boxwidth-2*arrow-0.04,cy,'x(k)','Color',colors(1,:),'HorizontalAlignment','center');
+f_line (cx-0.5*boxwidth-2*arrow+0.5*circle,cy,1,0,arrow-0.5*circle,colors(1,:))
+f_line (cx-0.5*boxwidth-arrow,cy-0.75*boxheight,0,1,1.5*boxheight,colors(1,:))
+f_vector (cx-0.5*boxwidth-arrow,cy-0.75*boxheight,1,0,arrow,colors(1,:))
+f_vector (cx-0.5*boxwidth-arrow,cy+0.75*boxheight,1,0,arrow,colors(1,:))
+
+f_block (cx-0.5*boxwidth,cy-1.25*boxheight,boxwidth,boxheight,colors(3,:))
+text (cx,cy-0.75*boxheight,'Adaptive filter','HorizontalAlignment','center')
+
+f_block (cx-0.5*boxwidth,cy+0.25*boxheight,boxwidth,boxheight,colors(2,:))
+text (cx,cy+0.75*boxheight,'Black box','HorizontalAlignment','center')
+
+f_line (cx+0.5*boxwidth,cy+0.75*boxheight,1,0,1.5*arrow,colors(2,:))
+text (cx+0.5*boxwidth+0.75*arrow,cy+0.75*boxheight+0.025,'d(k)','Color',colors(2,:),'HorizontalAlignment','center')
+f_vector (cx+0.5*boxwidth+1.5*arrow,cy+0.75*boxheight,0,-1,0.75*boxheight-0.5*summer,colors(2,:))
+f_circle (cx+0.5*boxwidth+1.5*arrow,cy,summer,colors(7,:))
+text (cx+0.5*boxwidth+1.5*arrow,cy,'+','Color',colors(76,:),'HorizontalAlignment','center')
+f_line (cx+0.5*boxwidth,cy-0.75*boxheight,1,0,1.5*arrow,colors(3,:))
+text (cx+0.5*boxwidth+0.75*arrow,cy-0.75*boxheight+0.025,'y(k)','Color',colors(3,:),'HorizontalAlignment','center')
+f_vector (cx+0.5*boxwidth+1.5*arrow,cy-0.75*boxheight,0,1,0.75*boxheight-0.5*summer,colors(3,:))
+
+f_line (cx+0.5*boxwidth+1.5*arrow+0.5*summer,cy,1,0,arrow,colors(3,:))
+text (cx+0.5*boxwidth+2*arrow+0.5*summer,cy+0.025,'e(k)','Color',colors(3,:),'HorizontalAlignment','center')
+f_line (cx+0.5*boxwidth+2.5*arrow+0.5*summer,cy,0,-1,1.75*boxheight,colors(3,:))
+f_line (cx+0.5*boxwidth+2.5*arrow+0.5*summer,cy-1.75*boxheight,-1,0,0.5*boxwidth+2.5*arrow+0.5*summer,colors(3,:))
+f_vector (cx,cy-1.75*boxheight,0,1,0.5*boxheight,colors(3,:))

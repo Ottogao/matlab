@@ -1,0 +1,151 @@
+function [x,y,L,M,user,fs,xm,xm_old] = f_getcorr (xm,xm_old,L,M,L_max,c,d,x,y,user,fs,hc_type);
+
+%F_GETCORR: Compute inputs for GUI module G_CORRELATE
+%
+% Usage:       [x,y,L,M,user,fs] = f_getcorr (xm,L,M,L_max,c,d,x,y,user,fs);
+%
+% Inputs: 
+%         xm      = type of input (1 to 6)
+%
+%                   1 = white noise
+%                   2 = periodic 
+%                   3 = impulse train 
+%                   4 = recorded x and y
+%                   5 = user defined
+%
+%         xm_old  = previous xm  
+%         L       = number of samples of x
+%         M       = number of samples of y (M <= L)
+%         L_max   = maximum number of samples of x
+%         c       = scale factor for y
+%         d       = delay for y
+%         x       = current signal x
+%         y       = current signal y 
+%         user    = string containing default name of MAT-file with
+%                   user data x,y,fs
+%         fs      = sampling frequency of x and y
+%         hc_type = array of handles to input type radio buttons 
+% Outputs: 
+%          x      = L by 1 vector containing first input signal
+%          y      = M by 1 vector containing second input signal
+%          L      = number of samples of x
+%          M      = number of samples of y (M <= L)
+%          user   = string containing default name of MAT-file with
+%                   user data x,y,T
+%          fs     = sampling frequency of x and y
+%          xm     = type of input
+%          xm_old = previous value of xm
+%
+% Note:  When xm <= 2, x(k) = v(k) + a*y(k-d)  
+
+% Initialize
+
+M = min(M,L);
+
+% Construct signals
+
+switch (xm)
+   
+case 1,                                          % white noise
+   
+   x = -1 + 2*rand(L,1);
+   y = -1 + 2*rand(M,1);
+   for i = 1 : M
+      k = i + d;
+      if k <= L
+         x(k) = x(k) + c*y(k-d);
+      end
+   end
+   
+case 2,                                          % periodic
+
+   rand ('seed',3000) 
+   x = zeros(L,1);
+   for i = 1 : 5
+      b = f_randu(1,1,0,1);
+      phi = f_randu(1,1,pi,pi);
+      for k = 1 : L
+         x(k) = x(k) + b*cos(60*pi*i*k/L + phi);
+      end
+   end
+   y = zeros(M,1);
+   for i = 1 : 5
+      b = f_randu (1,1,0,1);
+      phi = f_randu(1,1,pi,pi);
+      for k = 1 : M
+         y(k) = y(k) + b*cos(30*pi*i*k/M + phi);
+      end
+   end
+   for i = 1 : M
+      k = i + d;
+      if k <= L
+         x(k) = x(k) + c*y(k-d);
+     end
+   end
+      
+case 3,                                          % impulse train
+   
+   rand ('seed',2000)
+   c = 0.3;
+   x = f_randu(L,1,-c,c);
+   m = floor(L/8);
+   for i = 1 : 5
+      b = f_randu(1,1,0,1);
+      phi = f_randu (1,1,-pi,pi);
+      for k = 1 : L
+         x(k) = x(k) + b*cos(16*pi*i*k/L + phi);
+      end
+   end
+   y = zeros(M,1);
+   for i = 1 : M
+       if mod(i-1,m) == 0
+           y(i) = 1;
+       end
+   end
+   
+case 4,                                          % record x
+
+   [x,L,xm,fs] = f_record (x,L,1.0,fs,xm,xm_old,hc_type);
+   if xm == 4  
+       [y,M,xm,fs] = f_record (y,M,0.5,fs,xm,xm_old,hc_type);
+   end    
+        
+case 5,                                          % user defined
+   
+   caption = 'Select MAT-file containing x,y,fs';
+   [user1,path] = f_getmatfile (caption,user);
+   if user1 ~= 0
+       user = user1;
+       old_path = pwd;
+       cd (path);
+       load (user,'x','y','fs')
+       cd (old_path)
+       nx = length(x);
+       ny = length(y);
+       if ny > nx
+           y(nx+1:ny) = [];
+       end
+   else
+       set (hc_type(xm),'Value',0);
+       set (hc_type(xm_old),'Value',1);
+       xm = xm_old;
+   end
+
+end
+
+% Check x and y
+
+xm_old = xm;
+x = f_tocol(x);
+y = f_tocol(y);
+L = length(x);
+if L > L_max
+    x(L_max+1:L) = [];
+    L = L_max;
+end
+M = length(y);
+if M > L
+   y(L+1:M) = []; 
+   M = L;
+end
+ 

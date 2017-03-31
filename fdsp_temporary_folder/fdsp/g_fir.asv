@@ -1,0 +1,221 @@
+% G_FIR: GUI module for FIR filter design
+%
+% Usage: g_fir
+%
+% Version: 1.0
+%
+% Description: 
+%              This graphical user interface module is used
+%              to interactively investigate the design of FIR 
+%              digital filters. The design methods include 
+%              windowed (rectangular, Hanning, Hamming, 
+%              Blackman), frequency-sampled, least-squares, 
+%              and optimal equiripple.  The filter types 
+%              include lowpass, highpass, bandpass, bandstop, 
+%              and general.  All filters are linear-phase 
+%              filters.
+% Edit window:
+%              F_0     = lower cutoff frequency
+%              F_1     = upper cutoff frequency
+%              B       = transition bandwidth
+%              delta_p = passband ripple
+%              delta_s = stopband attenuation
+% Type window:
+%              Lowpass filter
+%              Highpass filter
+%              Bandpass filter
+%              Bandstop filter 
+%              User-defined filter
+% View window:
+%              Magnitude response
+%              Phase response
+%              Impulse response
+%              Pole-zero plot
+%              Window
+% Checkboxes:
+%              dB display
+% Slider bar:
+%              FIR filter order: m
+% Menu bar:
+%              Method option
+%              Save option: x,y,a,b,fs 
+%              Caliper option
+%              Print option
+%              Help option 
+% See also: 
+%              F_DSP G_SAMPLE G_RECONSTRUCT G_SYSTEM 
+%              G_SPECTRA G_CORRELATE G_FILTERS G_MULTIRATE
+%              G_IIR G_ADAPT
+
+% Programming notes:
+
+% Check MATLAB Version
+
+if (f_oldmat)
+   return
+end
+
+% Initialize
+
+clc
+clear all
+pv = 1;                    % plot view
+fs = 2000;                 % sampling frequency
+F_0 = 300;                 % lower cutoff frequency
+F_1 = 600;                 % upper cutoff frequency
+B = 50;                    % transition bandwidth
+delta_p = 0.05;            % passband ripple (linear)
+delta_s = 0.1;             % stopband ripple (linear)
+A_p =-20*log10(1-delta_p); % passband ripple (dB)
+A_s =-20*log10(delta_s);   % stopband ripple (dB)
+m = 40;                    % filter order
+m_min = 2;                 % minimum filter order
+m_max = 256;               % maximum filter order
+dB = 0;                    % linear plots (1 = log)
+fs_min = 1;                % minimum sampling frequency
+fs_max = 44100;            % maximum sampling frequency 
+method = 5;                % filter design method
+win = 1;                   % window type (0 to 3)
+xm = 3;                    % fitler type
+xm_old = xm;               % previous xm
+a = 1;                     % denominator
+b = [1 1];                 % numerator
+white = [1 1 1];
+M = 1000;
+x = f_randu(M,1,-1,1);
+y = filter(b,a,x);
+
+% Strings                          
+                          
+userinput  = 'u_fir1';           % default M-file function specifying desired amplitude response
+useroutput = 'u_fir1.mat';       % default MAT-file for saving data 
+inputstr   = ['[b,a,m,fs,x,y,userinput,xm,xm_old] = '...
+              'f_getfir (xm,xm_old,fs,F_0,F_1,B,delta_p,delta_s,m,method,win,userinput,b,a,x,y,hc_type); '];
+plotstr    = 'f_plotfir (pv,han,fs,hc_dB,a,b,xm,method,win,F_0,F_1,B,delta_p,delta_s,userinput,fsize); ';
+barstr     = 'f_showslider (hc_m,han,m,'''',1); ';
+g_module = 'g_fir';
+drawstr  = 'f_drawfilt (han(1),colors,fsize); ';
+
+% Create figure window with tiled axes
+ 
+[hf_1,han,pos,colors,fsize] = f_guifigure (g_module);
+
+% Add menu options
+
+hm_fir = f_firmenu (inputstr,plotstr,method,'Method');
+hm_save = f_savemenu (useroutput,'','Save data');
+f_calmenu (plotstr)
+f_printmenu (han,drawstr)
+f_helpmenu ('f_tipsfir',g_module)
+f_exitmenu
+
+% Draw block diagram
+
+eval(drawstr)
+
+% Edit boxes
+
+axes (han(2))
+cback =  [inputstr plotstr];
+hc_F0 = f_editbox (F_0,0,fs/2,pos(2,:),3,1,1,colors(2,:),white,cback,'Lower cutoff frequency',fsize);
+hc_F1 = f_editbox (F_1,F_0,fs/2,pos(2,:),3,2,1,colors(2,:),white,cback,'Upper cutoff frequency',fsize);
+hc_B  = f_editbox (B,0,B,pos(2,:),3,3,1,colors(2,:),white,cback,'Transition bandwidth',fsize);
+hc_fs = f_editbox (fs,fs_min,fs_max,pos(2,:),3,1,2,colors(1,:),white,cback,'Sampling frequency',fsize);
+
+cback5b = ['if dB == 0, '...
+           ' eval(get(hc_delta_p,''String'')),delta_p = f_clip(delta_p,0,1);'...
+           ' A_p = -20*log10(1 - delta_p);'...
+           'else, '...
+           ' eval(get(hc_delta_p,''String'')),A_p = f_clip(A_p,0,A_p);'...
+           ' delta_p = 1 - 10^(-A_p/20);'...
+           'end; '];
+hc_delta_p = f_editbox (delta_p,0,1,pos(2,:),3,2,2,colors(2,:),...
+                        white,[cback5b inputstr plotstr],'Passband ripple',fsize);
+
+cback6b = ['if dB == 0, '...
+           ' eval(get(hc_delta_s,''String'')),delta_s = f_clip(delta_s,0,1);'...
+           ' A_s = -20*log10(delta_s);'...
+           'else, '...
+           ' eval(get(hc_delta_s,''String'')),A_s = f_clip(A_s,0,A_s);'...
+           ' delta_s = 10^(-A_s/20);'...
+           'end; '];
+hc_delta_s = f_editbox (delta_s,0,1,pos(2,:),3,3,2,colors(2,:),...
+                        white,[cback6b inputstr plotstr],'Stopband attenuation',fsize);
+
+% Select filter type
+
+nt = 5;
+labels = {'Lowpass','Highpass','Bandpass','Bandstop','User-defined'};
+estr = 'if method == 6, method = 5; end; ';
+
+
+cstr = ['if method == 6, '...
+        '   method = 5; '...
+        ''for i = 0 : 6, '...
+        '   if i == method, '...
+        '       set(hm_fir(i+2),''Checked'',''on''), '...
+        '   else, '...
+        '       set(hm_fir(i+2),''Checked'',''off''), '...
+        '   end, '... 
+        'end, '...
+        'f_type = method; '...                                    % used by g_multirate
+        inputstr ...
+        plotstr];
+
+
+tipstrs = {'Lowpass filter','Highpass filter','Bandpass filter','Bandstop filter','Load a,b,fs'};
+cback = {[inputstr barstr plotstr],...
+         [inputstr barstr plotstr],...
+         [inputstr barstr plotstr],...
+         [inputstr barstr plotstr],...
+         [estr inputstr barstr plotstr]};
+ [hc_type,userinput] = f_typebuttons (pos(3,:),nt,xm,labels,colors(1,:),white,cback,userinput,tipstrs,nt,fsize);
+
+% Select view
+
+nv = 5;
+labels = {'Magnitude response','Phase response','Impulse response','Pole-zero plot','Window'};
+cback = {plotstr,plotstr,plotstr,plotstr,plotstr};
+fcolors = {colors(2,:),colors(2,:),colors(2,:),colors(2,:),colors(2,:)};
+tipstrs = {'Plot A(f)','Plot phi(f)','Plot h(k)','Plot pole-zero pattern','Plot window w(k)'};
+hc_view = f_viewbuttons (pos(4,:),nv,pv,labels,fcolors,white,cback,tipstrs,nv+1,fsize);
+
+% Check boxes
+
+cbackdB = ['dB = get (hc_dB,''Value''); '...
+           'if dB,'...  
+           ' set(hc_dB,''Value'',1),'...
+           ' eval(get(hc_delta_p,''String'')),'...
+           ' eval(get(hc_delta_s,''String'')),'...
+           ' A_p = -20*log10(1 - delta_p);'...
+           ' A_s = -20*log10(delta_s);'...
+           ' set(hc_delta_p,''String'',[''A_p = '',mat2str(A_p,3),'';'']),'...
+           ' set(hc_delta_s,''String'',[''A_s = '',mat2str(A_s,3),'';'']),'...
+           'else,'...
+           ' set(hc_dB,''Value'',0),'...
+           ' eval(get(hc_delta_p,''String'')),'...
+           ' eval(get(hc_delta_s,''String'')),'...
+           ' set(hc_dB,''Value'',0),'...
+           ' delta_p = 1 - 10^(-A_p/20);'...
+           ' delta_s = 10^(-A_s/20);'...
+           ' set(hc_delta_p,''String'',[''delta_p = '',mat2str(delta_p,3),'';'']),'...
+           ' set(hc_delta_s,''String'',[''delta_s = '',mat2str(delta_s,3),'';'']),'...
+           'end; '];
+hc_dB = f_checkbox (dB,pos(4,:),nv+1,1,nv+1,1,'dB display',colors(3,:),...
+                     white,[cbackdB inputstr plotstr],'Toggle dB display',fsize);
+
+% Filter order slider
+
+dv = 1;
+tipstr = 'Adjust FIR filter order m';
+cback = [inputstr barstr plotstr];
+hc_m = f_slider (m,m_min,m_max,pos(5,:),colors(2,:),'y',cback,tipstr,dv,'',fsize);
+
+% Compute initial filter
+
+eval (inputstr);
+
+% Create plot
+
+eval (plotstr)
+ 

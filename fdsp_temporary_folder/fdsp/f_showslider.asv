@@ -1,0 +1,30 @@
+function f_showslider (hs,v,fcolor,units,display)
+
+%F_SHOWBAR: Display the slider bar label for GUI modules
+%
+% Usage: f_showslider (hs,pos,color,label,units,pos_slider,xmin,xmax)
+%
+% Inputs: 
+%         hs      = 1 by 4 array slider control handles
+%         han     = array of axes handles 
+%         v       = slider variable
+%         fcolor  = text color for slider bar label
+%         units   = units for slider bar label
+%         display = integer specifying display mode as follows;
+%
+%                   0 = slider not visible
+%                   1 = slider visible
+
+vstr = inputname(3);
+
+if display
+ 
+   set (hs,'Visible','on') 
+   set(hs(4),'String',[vstr ' = ' num2str(v) ' ' units]);
+
+else
+    
+    set (han(5),'Visible','off')
+    set (hs,'Visible','off')
+   
+end    
